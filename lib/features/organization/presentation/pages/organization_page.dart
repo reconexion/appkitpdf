@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/utils/file_utils.dart';
 import '../../../../core/widgets/pdf_page_picker.dart';
 import '../../../../core/widgets/result_card.dart';
@@ -14,7 +15,7 @@ class OrganizationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Organization')),
+      appBar: AppBar(title: Text(context.t.organizationPageTitle)),
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: const [
@@ -35,7 +36,7 @@ class OrganizationPage extends StatelessWidget {
   }
 }
 
-/// "Texto" / "Visual" segmented switch shared by every section below.
+/// "Text" / "Visual" segmented switch shared by every section below.
 class _ModeToggle extends StatelessWidget {
   final _InputMode mode;
   final ValueChanged<_InputMode> onChanged;
@@ -44,19 +45,20 @@ class _ModeToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     return Align(
       alignment: Alignment.centerLeft,
       child: SegmentedButton<_InputMode>(
-        segments: const [
+        segments: [
           ButtonSegment(
             value: _InputMode.text,
-            icon: Icon(Icons.text_fields, size: 16),
-            label: Text('Texto'),
+            icon: const Icon(Icons.text_fields, size: 16),
+            label: Text(t.modeText),
           ),
           ButtonSegment(
             value: _InputMode.visual,
-            icon: Icon(Icons.grid_view, size: 16),
-            label: Text('Visual'),
+            icon: const Icon(Icons.grid_view, size: 16),
+            label: Text(t.modeVisual),
           ),
         ],
         selected: {mode},
@@ -81,7 +83,7 @@ class _VisualHint extends StatelessWidget {
         children: [
           Icon(Icons.info_outline, size: 16, color: Colors.grey.shade600),
           const SizedBox(width: 6),
-          Text('Selecciona un PDF para ver sus hojas',
+          Text(context.t.visualHint,
               style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
         ],
       ),
@@ -95,8 +97,9 @@ class _MergeSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<OrganizationViewModel>();
+    final t = context.t;
     return _Section(
-      title: 'Merge PDFs',
+      title: t.mergeTitle,
       children: [
         ElevatedButton(
           onPressed: () async {
@@ -109,10 +112,10 @@ class _MergeSection extends StatelessWidget {
               vm.mergeFiles = r.files.map((f) => f.path!).toList();
             }
           },
-          child: const Text('Select PDFs (multiple)'),
+          child: Text(t.selectPdfsMultiple),
         ),
         if (vm.mergeFiles.isNotEmpty) ...[
-          Text('${vm.mergeFiles.length} files selected'),
+          Text(t.filesSelected(vm.mergeFiles.length)),
           ...vm.mergeFiles
               .map((p) => Text('• ${p.split('/').last}',
                   style: const TextStyle(fontSize: 12))),
@@ -122,7 +125,7 @@ class _MergeSection extends StatelessWidget {
           onPressed: vm.mergeFiles.length >= 2 && !vm.isMerging
               ? () => vm.merge()
               : null,
-          child: const Text('Merge'),
+          child: Text(t.mergeButton),
         ),
         ResultCard(result: vm.mergeResult, isLoading: vm.isMerging),
       ],
@@ -181,13 +184,13 @@ class _SplitSectionState extends State<_SplitSection> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<OrganizationViewModel>();
+    final t = context.t;
     final ranges = _computeRanges();
     return _Section(
-      title: 'Split PDF',
+      title: t.splitTitle,
       children: [
         FileTile(
           path: vm.splitFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -201,15 +204,15 @@ class _SplitSectionState extends State<_SplitSection> {
         if (_mode == _InputMode.text)
           TextField(
             controller: _rangesController,
-            decoration: const InputDecoration(
-              labelText: 'Page ranges (e.g. 1-3,4-6 or 1,2,3)',
+            decoration: InputDecoration(
+              labelText: t.rangesLabel,
               isDense: true,
             ),
           )
         else if (vm.splitFile == null)
           const _VisualHint()
         else ...[
-          Text('Toca las hojas de la parte actual y agrégalas:',
+          Text(t.visualSplitHint,
               style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
           PdfPageMultiSelect(
             path: vm.splitFile!,
@@ -228,7 +231,7 @@ class _SplitSectionState extends State<_SplitSection> {
               runSpacing: 4,
               children: _visualParts.asMap().entries.map((e) {
                 return Chip(
-                  label: Text('Parte ${e.key + 1}: ${e.value.join(",")}'),
+                  label: Text(t.partLabel(e.key + 1, e.value.join(","))),
                   onDeleted: () =>
                       setState(() => _visualParts.removeAt(e.key)),
                 );
@@ -243,7 +246,7 @@ class _SplitSectionState extends State<_SplitSection> {
                       _visualCurrent = {};
                     }),
             icon: const Icon(Icons.add),
-            label: const Text('Agregar como nueva parte'),
+            label: Text(t.addPartButton),
           ),
         ],
         const SizedBox(height: 8),
@@ -251,13 +254,14 @@ class _SplitSectionState extends State<_SplitSection> {
           onPressed: vm.splitFile != null && !vm.isSplitting && ranges.isNotEmpty
               ? () => vm.split(ranges)
               : null,
-          child: const Text('Split'),
+          child: Text(t.splitButton),
         ),
         ResultCard(result: vm.splitResult, isLoading: vm.isSplitting),
         if (vm.splitResult?.isSuccess == true &&
             vm.splitResult!.outputPaths != null)
           ...vm.splitResult!.outputPaths!.asMap().entries.map(
-              (e) => Text('Part ${e.key + 1}: ${e.value.split('/').last}',
+              (e) => Text(
+                  t.partResultLabel(e.key + 1, e.value.split('/').last),
                   style: const TextStyle(fontSize: 12))),
       ],
     );
@@ -295,13 +299,13 @@ class _RemovePagesSectionState extends State<_RemovePagesSection> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<OrganizationViewModel>();
+    final t = context.t;
     final pages = _computePages();
     return _Section(
-      title: 'Remove Pages',
+      title: t.removeTitle,
       children: [
         FileTile(
           path: vm.removeFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -315,9 +319,8 @@ class _RemovePagesSectionState extends State<_RemovePagesSection> {
         if (_mode == _InputMode.text)
           TextField(
             controller: _ctrl,
-            decoration: const InputDecoration(
-                labelText: 'Page numbers to remove (e.g. 2,4,7)',
-                isDense: true),
+            decoration: InputDecoration(
+                labelText: t.removePagesLabel, isDense: true),
           )
         else if (vm.removeFile == null)
           const _VisualHint()
@@ -339,7 +342,7 @@ class _RemovePagesSectionState extends State<_RemovePagesSection> {
           onPressed: vm.removeFile != null && !vm.isRemoving && pages.isNotEmpty
               ? () => vm.removePages(pages)
               : null,
-          child: const Text('Remove Pages'),
+          child: Text(t.removeButton),
         ),
         ResultCard(result: vm.removeResult, isLoading: vm.isRemoving),
       ],
@@ -378,13 +381,13 @@ class _ExtractPagesSectionState extends State<_ExtractPagesSection> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<OrganizationViewModel>();
+    final t = context.t;
     final pages = _computePages();
     return _Section(
-      title: 'Extract Pages',
+      title: t.extractTitle,
       children: [
         FileTile(
           path: vm.extractFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -398,8 +401,8 @@ class _ExtractPagesSectionState extends State<_ExtractPagesSection> {
         if (_mode == _InputMode.text)
           TextField(
             controller: _ctrl,
-            decoration: const InputDecoration(
-                labelText: 'Pages to extract (e.g. 1,3,5)', isDense: true),
+            decoration: InputDecoration(
+                labelText: t.extractPagesLabel, isDense: true),
           )
         else if (vm.extractFile == null)
           const _VisualHint()
@@ -422,7 +425,7 @@ class _ExtractPagesSectionState extends State<_ExtractPagesSection> {
               vm.extractFile != null && !vm.isExtracting && pages.isNotEmpty
                   ? () => vm.extractPages(pages)
                   : null,
-          child: const Text('Extract Pages'),
+          child: Text(t.extractButton),
         ),
         ResultCard(result: vm.extractResult, isLoading: vm.isExtracting),
       ],
@@ -461,13 +464,13 @@ class _ReorderSectionState extends State<_ReorderSection> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<OrganizationViewModel>();
+    final t = context.t;
     final order = _computeOrder();
     return _Section(
-      title: 'Reorder Pages',
+      title: t.reorderTitle,
       children: [
         FileTile(
           path: vm.reorderFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -487,14 +490,13 @@ class _ReorderSectionState extends State<_ReorderSection> {
         if (_mode == _InputMode.text)
           TextField(
             controller: _ctrl,
-            decoration: const InputDecoration(
-                labelText: 'New order (e.g. 3,1,2 moves page 3 first)',
-                isDense: true),
+            decoration: InputDecoration(
+                labelText: t.reorderLabel, isDense: true),
           )
         else if (vm.reorderFile == null)
           const _VisualHint()
         else ...[
-          Text('Mantén presionada una hoja y arrástrala para reordenar:',
+          Text(t.reorderVisualHint,
               style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
           PdfPageReorderList(
             path: vm.reorderFile!,
@@ -507,7 +509,7 @@ class _ReorderSectionState extends State<_ReorderSection> {
               vm.reorderFile != null && !vm.isReordering && order.isNotEmpty
                   ? () => vm.reorderPages(order)
                   : null,
-          child: const Text('Reorder'),
+          child: Text(t.reorderButton),
         ),
         ResultCard(result: vm.reorderResult, isLoading: vm.isReordering),
       ],
@@ -536,9 +538,9 @@ class _RotateSectionState extends State<_RotateSection> {
   /// null means "all pages" (only reachable from text mode's empty field).
   List<int>? _computePages() {
     if (_mode == _InputMode.text) {
-      final t = _pagesCtrl.text.trim();
-      if (t.isEmpty) return null;
-      return t
+      final input = _pagesCtrl.text.trim();
+      if (input.isEmpty) return null;
+      return input
           .split(',')
           .map((s) => int.tryParse(s.trim()))
           .whereType<int>()
@@ -566,16 +568,16 @@ class _RotateSectionState extends State<_RotateSection> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<OrganizationViewModel>();
+    final t = context.t;
     final computed = _computePages();
     final canRotate = vm.rotateFile != null &&
         !vm.isRotating &&
         (_mode == _InputMode.text || (computed != null && computed.isNotEmpty));
     return _Section(
-      title: 'Rotate Pages',
+      title: t.rotateTitle,
       children: [
         FileTile(
           path: vm.rotateFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -589,9 +591,8 @@ class _RotateSectionState extends State<_RotateSection> {
         if (_mode == _InputMode.text)
           TextField(
             controller: _pagesCtrl,
-            decoration: const InputDecoration(
-                labelText: 'Pages to rotate (e.g. 1,2 or leave empty for all)',
-                isDense: true),
+            decoration: InputDecoration(
+                labelText: t.rotatePagesLabel, isDense: true),
           )
         else if (vm.rotateFile == null)
           const _VisualHint()
@@ -621,7 +622,7 @@ class _RotateSectionState extends State<_RotateSection> {
         const SizedBox(height: 8),
         ElevatedButton(
           onPressed: canRotate ? () => _rotate(vm) : null,
-          child: const Text('Rotate'),
+          child: Text(t.rotateButton),
         ),
         ResultCard(result: vm.rotateResult, isLoading: vm.isRotating),
       ],

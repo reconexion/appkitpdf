@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/widgets/animations.dart';
 import '../../../conversion/presentation/pages/conversion_page.dart';
 import '../../../editing/presentation/pages/editing_page.dart';
@@ -11,48 +13,50 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final features = [
       _Feature(
         icon: Icons.folder_copy,
         color: Colors.indigo,
-        title: 'Organization',
-        subtitle: 'Merge · Split · Remove · Extract · Reorder · Rotate',
+        title: t.organizationTitle,
+        subtitle: t.organizationSubtitle,
         page: const OrganizationPage(),
       ),
       _Feature(
         icon: Icons.swap_horiz,
         color: Colors.teal,
-        title: 'Conversion',
-        subtitle: 'PDF↔Word · PDF↔Excel · PDF↔PPT · PDF↔Images · HTML→PDF',
+        title: t.conversionTitle,
+        subtitle: t.conversionSubtitle,
         page: const ConversionPage(),
       ),
       _Feature(
         icon: Icons.edit_document,
         color: Colors.deepOrange,
-        title: 'Editing',
-        subtitle: 'Add page numbers · Text overlay / Watermark',
+        title: t.editingTitle,
+        subtitle: t.editingSubtitle,
         page: const EditingPage(),
       ),
       _Feature(
         icon: Icons.lock,
         color: Colors.blueGrey,
-        title: 'Security',
-        subtitle: 'Password protect · Unprotect · Compress',
+        title: t.securityTitle,
+        subtitle: t.securitySubtitle,
         page: const SecurityPage(),
       ),
       _Feature(
         icon: Icons.auto_awesome,
         color: Colors.purple,
-        title: 'Extras',
-        subtitle: 'OCR · Compare PDFs · Repair corrupted PDF',
+        title: t.extrasTitle,
+        subtitle: t.extrasSubtitle,
         page: const ExtrasPage(),
       ),
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PDF Kit'),
+        title: Text(t.appTitle),
         centerTitle: false,
+        actions: const [_LanguageSwitch()],
       ),
       body: ListView.builder(
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
@@ -60,6 +64,44 @@ class HomePage extends StatelessWidget {
         itemBuilder: (context, i) => FadeSlideIn(
           index: i,
           child: _FeatureTile(feature: features[i]),
+        ),
+      ),
+    );
+  }
+}
+
+class _LanguageSwitch extends StatelessWidget {
+  const _LanguageSwitch();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.watch<LocaleController>();
+    final isEn = controller.language == AppLanguage.en;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Tooltip(
+        message: context.t.languageTooltip,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: controller.toggle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.language, size: 18),
+                const SizedBox(width: 4),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Text(
+                    isEn ? 'EN' : 'ES',
+                    key: ValueKey(isEn),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

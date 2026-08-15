@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/widgets/result_card.dart';
 import '../viewmodels/security_view_model.dart';
 
@@ -10,7 +11,7 @@ class SecurityPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Security')),
+      appBar: AppBar(title: Text(context.t.securityPageTitle)),
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: const [
@@ -44,12 +45,12 @@ class _ProtectSectionState extends State<_ProtectSection> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<SecurityViewModel>();
+    final t = context.t;
     return _Section(
-      title: 'Protect with Password',
+      title: t.protectTitle,
       children: [
         FileTile(
           path: vm.protectFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -62,7 +63,7 @@ class _ProtectSectionState extends State<_ProtectSection> {
           obscureText: _obscure,
           onChanged: (_) => setState(() {}),
           decoration: InputDecoration(
-            labelText: 'Password',
+            labelText: t.passwordLabel,
             isDense: true,
             suffixIcon: IconButton(
               icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
@@ -77,7 +78,7 @@ class _ProtectSectionState extends State<_ProtectSection> {
                   !vm.isProtecting
               ? () => vm.protect(_pwdCtrl.text)
               : null,
-          child: const Text('Protect PDF'),
+          child: Text(t.protectButton),
         ),
         ResultCard(result: vm.protectResult, isLoading: vm.isProtecting),
       ],
@@ -103,12 +104,12 @@ class _UnprotectSectionState extends State<_UnprotectSection> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<SecurityViewModel>();
+    final t = context.t;
     return _Section(
-      title: 'Remove Password',
+      title: t.unprotectTitle,
       children: [
         FileTile(
           path: vm.unprotectFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -119,15 +120,15 @@ class _UnprotectSectionState extends State<_UnprotectSection> {
         TextField(
           controller: _pwdCtrl,
           obscureText: true,
-          decoration: const InputDecoration(
-              labelText: 'Current password', isDense: true),
+          decoration: InputDecoration(
+              labelText: t.currentPasswordLabel, isDense: true),
         ),
         const SizedBox(height: 8),
         ElevatedButton(
           onPressed: vm.unprotectFile != null && !vm.isUnprotecting
               ? () => vm.unprotect(_pwdCtrl.text)
               : null,
-          child: const Text('Remove Password'),
+          child: Text(t.unprotectButton),
         ),
         ResultCard(result: vm.unprotectResult, isLoading: vm.isUnprotecting),
       ],
@@ -141,14 +142,14 @@ class _CompressSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<SecurityViewModel>();
+    final t = context.t;
     return _Section(
-      title: 'Compress PDF',
+      title: t.compressTitle,
       children: [
-        const Text('Reduces file size using maximum compression.',
-            style: TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(t.compressDesc,
+            style: const TextStyle(fontSize: 12, color: Colors.grey)),
         FileTile(
           path: vm.compressFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -161,7 +162,7 @@ class _CompressSection extends StatelessWidget {
           onPressed: vm.compressFile != null && !vm.isCompressing
               ? () => vm.compress()
               : null,
-          child: const Text('Compress'),
+          child: Text(t.compressButton),
         ),
         ResultCard(result: vm.compressResult, isLoading: vm.isCompressing),
       ],

@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/widgets/result_card.dart';
 import '../viewmodels/conversion_view_model.dart';
 
@@ -10,7 +11,7 @@ class ConversionPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Conversion')),
+      appBar: AppBar(title: Text(context.t.conversionPageTitle)),
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: const [
@@ -37,12 +38,12 @@ class _PdfToImagesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ConversionViewModel>();
+    final t = context.t;
     return _Section(
-      title: 'PDF → JPG/Images',
+      title: t.pdfToImagesTitle,
       children: [
         FileTile(
           path: vm.pdfToImagesFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -54,7 +55,7 @@ class _PdfToImagesSection extends StatelessWidget {
           onPressed: vm.pdfToImagesFile != null && !vm.isConvertingToImages
               ? () => vm.convertPdfToImages()
               : null,
-          child: const Text('Convert to Images'),
+          child: Text(t.convertToImagesButton),
         ),
         ResultCard(
             result: vm.pdfToImagesResult,
@@ -70,8 +71,9 @@ class _ImagesToPdfSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ConversionViewModel>();
+    final t = context.t;
     return _Section(
-      title: 'Images → PDF',
+      title: t.imagesToPdfTitle,
       children: [
         ElevatedButton(
           onPressed: () async {
@@ -83,15 +85,15 @@ class _ImagesToPdfSection extends StatelessWidget {
               vm.imagesToPdfFiles = r.files.map((f) => f.path!).toList();
             }
           },
-          child: const Text('Select Images (multiple)'),
+          child: Text(t.selectImagesMultiple),
         ),
         if (vm.imagesToPdfFiles.isNotEmpty)
-          Text('${vm.imagesToPdfFiles.length} images selected'),
+          Text(t.imagesSelected(vm.imagesToPdfFiles.length)),
         ElevatedButton(
           onPressed: vm.imagesToPdfFiles.isNotEmpty && !vm.isConvertingToPdf
               ? () => vm.convertImagesToPdf()
               : null,
-          child: const Text('Create PDF'),
+          child: Text(t.createPdfButton),
         ),
         ResultCard(
             result: vm.imagesToPdfResult, isLoading: vm.isConvertingToPdf),
@@ -106,14 +108,14 @@ class _PdfToWordSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ConversionViewModel>();
+    final t = context.t;
     return _Section(
-      title: 'PDF → Word (.docx)',
+      title: t.pdfToWordTitle,
       children: [
-        const Text('Extracts text and creates a Word document.',
-            style: TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(t.pdfToWordDesc,
+            style: const TextStyle(fontSize: 12, color: Colors.grey)),
         FileTile(
           path: vm.pdfToWordFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -125,7 +127,7 @@ class _PdfToWordSection extends StatelessWidget {
           onPressed: vm.pdfToWordFile != null && !vm.isConvertingToWord
               ? () => vm.convertPdfToWord()
               : null,
-          child: const Text('Convert to Word'),
+          child: Text(t.convertToWordButton),
         ),
         ResultCard(
             result: vm.pdfToWordResult, isLoading: vm.isConvertingToWord),
@@ -140,14 +142,14 @@ class _PdfToExcelSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ConversionViewModel>();
+    final t = context.t;
     return _Section(
-      title: 'PDF → Excel (.xlsx)',
+      title: t.pdfToExcelTitle,
       children: [
-        const Text('Extracts text into spreadsheet rows.',
-            style: TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(t.pdfToExcelDesc,
+            style: const TextStyle(fontSize: 12, color: Colors.grey)),
         FileTile(
           path: vm.pdfToExcelFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -159,7 +161,7 @@ class _PdfToExcelSection extends StatelessWidget {
           onPressed: vm.pdfToExcelFile != null && !vm.isConvertingToExcel
               ? () => vm.convertPdfToExcel()
               : null,
-          child: const Text('Convert to Excel'),
+          child: Text(t.convertToExcelButton),
         ),
         ResultCard(
             result: vm.pdfToExcelResult, isLoading: vm.isConvertingToExcel),
@@ -174,14 +176,14 @@ class _PdfToPptSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ConversionViewModel>();
+    final t = context.t;
     return _Section(
-      title: 'PDF → PowerPoint (.pptx)',
+      title: t.pdfToPptTitle,
       children: [
-        const Text('Each text block becomes a slide.',
-            style: TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(t.pdfToPptDesc,
+            style: const TextStyle(fontSize: 12, color: Colors.grey)),
         FileTile(
           path: vm.pdfToPptFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -193,7 +195,7 @@ class _PdfToPptSection extends StatelessWidget {
           onPressed: vm.pdfToPptFile != null && !vm.isConvertingToPpt
               ? () => vm.convertPdfToPpt()
               : null,
-          child: const Text('Convert to PowerPoint'),
+          child: Text(t.convertToPptButton),
         ),
         ResultCard(
             result: vm.pdfToPptResult, isLoading: vm.isConvertingToPpt),
@@ -221,21 +223,22 @@ class _HtmlToPdfSectionState extends State<_HtmlToPdfSection> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ConversionViewModel>();
+    final t = context.t;
     return _Section(
-      title: 'HTML → PDF',
+      title: t.htmlToPdfTitle,
       children: [
         TextField(
           controller: _ctrl,
           maxLines: 5,
-          decoration: const InputDecoration(
-              labelText: 'Paste HTML content here', border: OutlineInputBorder()),
+          decoration: InputDecoration(
+              labelText: t.htmlToPdfHint, border: const OutlineInputBorder()),
         ),
         const SizedBox(height: 8),
         ElevatedButton(
           onPressed: !vm.isConvertingHtml
               ? () => vm.convertHtmlToPdf(_ctrl.text)
               : null,
-          child: const Text('Convert to PDF'),
+          child: Text(t.convertToPdfButton),
         ),
         ResultCard(result: vm.htmlToPdfResult, isLoading: vm.isConvertingHtml),
       ],

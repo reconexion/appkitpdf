@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
+import '../l10n/app_strings.dart';
 import '../result/result.dart';
 
 class ResultCard extends StatelessWidget {
@@ -27,15 +28,16 @@ class ResultCard extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
+    final t = context.t;
     if (isLoading) {
-      return const Padding(
-        key: ValueKey('loading'),
-        padding: EdgeInsets.all(12),
+      return Padding(
+        key: const ValueKey('loading'),
+        padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-            LinearProgressIndicator(),
-            SizedBox(height: 8),
-            Text('Procesando...'),
+            const LinearProgressIndicator(),
+            const SizedBox(height: 8),
+            Text(t.processing),
           ],
         ),
       );
@@ -58,7 +60,7 @@ class ResultCard extends StatelessWidget {
             Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
             const SizedBox(width: 8),
             Expanded(
-              child: Text('Error: ${result!.error}',
+              child: Text(t.errorMessage(result!.error ?? ''),
                   style: TextStyle(color: Colors.red.shade800)),
             ),
           ],
@@ -93,7 +95,7 @@ class ResultCard extends StatelessWidget {
                     color: Colors.green.shade700, size: 20),
               ),
               const SizedBox(width: 6),
-              Text('Listo',
+              Text(t.done,
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.green.shade800)),
@@ -108,13 +110,13 @@ class ResultCard extends StatelessWidget {
               if (paths.isNotEmpty)
                 TextButton.icon(
                   icon: const Icon(Icons.open_in_new, size: 16),
-                  label: const Text('Abrir'),
+                  label: Text(t.open),
                   onPressed: () => OpenFilex.open(paths.first),
                 ),
               if (paths.isNotEmpty)
                 TextButton.icon(
                   icon: const Icon(Icons.share, size: 16),
-                  label: const Text('Compartir'),
+                  label: Text(t.share),
                   onPressed: () => Share.shareXFiles(
                       paths.map((p) => XFile(p)).toList()),
                 ),
@@ -128,20 +130,21 @@ class ResultCard extends StatelessWidget {
 
 class FileTile extends StatelessWidget {
   final String? path;
-  final String label;
+  final String? label;
   final VoidCallback onTap;
   final VoidCallback? onClear;
 
   const FileTile({
     super.key,
     required this.path,
-    required this.label,
+    this.label,
     required this.onTap,
     this.onClear,
   });
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final selected = path != null;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -173,7 +176,7 @@ class FileTile extends StatelessWidget {
                 : Colors.grey,
           ),
         ),
-        title: Text(path?.split('/').last ?? label,
+        title: Text(path?.split('/').last ?? label ?? t.noFileSelected,
             style: TextStyle(
                 color: selected ? null : Colors.grey,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
@@ -181,7 +184,7 @@ class FileTile extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextButton(onPressed: onTap, child: const Text('Elegir')),
+            TextButton(onPressed: onTap, child: Text(t.select)),
             if (selected && onClear != null)
               IconButton(
                   icon: const Icon(Icons.close, size: 16),

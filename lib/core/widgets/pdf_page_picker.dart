@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_strings.dart';
 import 'pdf_thumbnails.dart';
 
 /// Grid of page thumbnails where the user taps to toggle selection.
@@ -184,7 +185,7 @@ class _PdfPageReorderListState extends State<PdfPageReorderList> {
                           width: 40, height: 52, fit: BoxFit.cover)
                       : const SizedBox(width: 40, height: 52),
                 ),
-                title: Text('Página $pageNum'),
+                title: Text(context.t.pageLabel(pageNum)),
                 trailing: ReorderableDragStartListener(
                   index: i,
                   child: const Icon(Icons.drag_handle),
@@ -213,13 +214,14 @@ class PageSelectAllActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     return Row(
       children: [
-        Text('$totalPages páginas',
+        Text(t.pagesCount(totalPages),
             style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
         const Spacer(),
-        TextButton(onPressed: onSelectAll, child: const Text('Todo')),
-        TextButton(onPressed: onClear, child: const Text('Ninguno')),
+        TextButton(onPressed: onSelectAll, child: Text(t.selectAll)),
+        TextButton(onPressed: onClear, child: Text(t.clearSelection)),
       ],
     );
   }

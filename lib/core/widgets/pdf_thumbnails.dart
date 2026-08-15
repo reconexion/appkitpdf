@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:pdfx/pdfx.dart' as pdfx;
+import '../l10n/app_strings.dart';
 
 /// Loads every page of the PDF at [path] as a small JPEG thumbnail and hands
 /// them to [builder]. Reused by every visual page-picker widget.
@@ -68,7 +69,7 @@ class _PdfThumbnailsState extends State<PdfThumbnails> {
         if (snapshot.hasError || !snapshot.hasData) {
           return Padding(
             padding: const EdgeInsets.all(12),
-            child: Text('No se pudo previsualizar el PDF: ${snapshot.error}',
+            child: Text(context.t.previewFailed('${snapshot.error}'),
                 style: TextStyle(color: Colors.red.shade700, fontSize: 12)),
           );
         }

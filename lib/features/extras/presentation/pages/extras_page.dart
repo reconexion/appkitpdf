@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/widgets/result_card.dart';
 import '../viewmodels/extras_view_model.dart';
 
@@ -10,7 +11,7 @@ class ExtrasPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Extras')),
+      appBar: AppBar(title: Text(context.t.extrasPageTitle)),
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: const [
@@ -31,15 +32,14 @@ class _OcrSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ExtrasViewModel>();
+    final t = context.t;
     return _Section(
-      title: 'OCR — Scanned PDF → Selectable Text',
+      title: t.ocrTitle,
       children: [
-        const Text(
-            'Renders each page as image, then runs ML Kit text recognition.',
-            style: TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(t.ocrDesc,
+            style: const TextStyle(fontSize: 12, color: Colors.grey)),
         FileTile(
           path: vm.ocrFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -51,7 +51,7 @@ class _OcrSection extends StatelessWidget {
         ElevatedButton(
           onPressed:
               vm.ocrFile != null && !vm.isOcring ? () => vm.ocr() : null,
-          child: const Text('Run OCR'),
+          child: Text(t.runOcrButton),
         ),
         ResultCard(result: vm.ocrResult, isLoading: vm.isOcring),
       ],
@@ -65,14 +65,15 @@ class _CompareSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ExtrasViewModel>();
+    final t = context.t;
     return _Section(
-      title: 'Compare PDFs',
+      title: t.compareTitle,
       children: [
-        const Text('Extracts text from both PDFs and diffs line by line.',
-            style: TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(t.compareDesc,
+            style: const TextStyle(fontSize: 12, color: Colors.grey)),
         FileTile(
           path: vm.compareFile1,
-          label: 'PDF 1 — not selected',
+          label: t.pdf1Label,
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -82,7 +83,7 @@ class _CompareSection extends StatelessWidget {
         ),
         FileTile(
           path: vm.compareFile2,
-          label: 'PDF 2 — not selected',
+          label: t.pdf2Label,
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -97,7 +98,7 @@ class _CompareSection extends StatelessWidget {
                   !vm.isComparing
               ? () => vm.compare()
               : null,
-          child: const Text('Compare'),
+          child: Text(t.compareButton),
         ),
         ResultCard(result: vm.compareResult, isLoading: vm.isComparing),
       ],
@@ -111,15 +112,14 @@ class _RepairSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ExtrasViewModel>();
+    final t = context.t;
     return _Section(
-      title: 'Repair Corrupted PDF',
+      title: t.repairTitle,
       children: [
-        const Text(
-            'Attempts to load and re-save the PDF, rebuilding its structure.',
-            style: TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(t.repairDesc,
+            style: const TextStyle(fontSize: 12, color: Colors.grey)),
         FileTile(
           path: vm.repairFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -132,7 +132,7 @@ class _RepairSection extends StatelessWidget {
           onPressed: vm.repairFile != null && !vm.isRepairing
               ? () => vm.repair()
               : null,
-          child: const Text('Repair PDF'),
+          child: Text(t.repairButton),
         ),
         ResultCard(result: vm.repairResult, isLoading: vm.isRepairing),
       ],

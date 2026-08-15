@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/widgets/result_card.dart';
 import '../../domain/repositories/editing_repository.dart';
 import '../viewmodels/editing_view_model.dart';
@@ -11,7 +12,7 @@ class EditingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Editing')),
+      appBar: AppBar(title: Text(context.t.editingPageTitle)),
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: const [
@@ -36,12 +37,12 @@ class _PageNumbersSectionState extends State<_PageNumbersSection> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<EditingViewModel>();
+    final t = context.t;
     return _Section(
-      title: 'Add Page Numbers',
+      title: t.pageNumbersTitle,
       children: [
         FileTile(
           path: vm.pageNumberFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -51,16 +52,16 @@ class _PageNumbersSectionState extends State<_PageNumbersSection> {
         ),
         DropdownButton<PageNumberPosition>(
           value: _position,
-          items: const [
+          items: [
             DropdownMenuItem(
                 value: PageNumberPosition.bottomCenter,
-                child: Text('Bottom Center')),
+                child: Text(t.positionBottomCenter)),
             DropdownMenuItem(
                 value: PageNumberPosition.bottomRight,
-                child: Text('Bottom Right')),
+                child: Text(t.positionBottomRight)),
             DropdownMenuItem(
                 value: PageNumberPosition.topCenter,
-                child: Text('Top Center')),
+                child: Text(t.positionTopCenter)),
           ],
           onChanged: (v) => setState(() => _position = v!),
         ),
@@ -69,7 +70,7 @@ class _PageNumbersSectionState extends State<_PageNumbersSection> {
           onPressed: vm.pageNumberFile != null && !vm.isAddingPageNumbers
               ? () => vm.addPageNumbers(_position)
               : null,
-          child: const Text('Add Page Numbers'),
+          child: Text(t.addPageNumbersButton),
         ),
         ResultCard(
             result: vm.pageNumberResult, isLoading: vm.isAddingPageNumbers),
@@ -101,12 +102,12 @@ class _TextOverlaySectionState extends State<_TextOverlaySection> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<EditingViewModel>();
+    final t = context.t;
     return _Section(
-      title: 'Add Text / Watermark',
+      title: t.overlayTitle,
       children: [
         FileTile(
           path: vm.overlayFile,
-          label: 'No file selected',
           onTap: () async {
             final r = await FilePicker.platform.pickFiles(
                 type: FileType.custom, allowedExtensions: ['pdf']);
@@ -116,12 +117,12 @@ class _TextOverlaySectionState extends State<_TextOverlaySection> {
         ),
         TextField(
           controller: _textCtrl,
-          decoration: const InputDecoration(
-              labelText: 'Text to overlay', isDense: true),
+          decoration: InputDecoration(
+              labelText: t.overlayTextLabel, isDense: true),
         ),
         Row(
           children: [
-            const Text('Font size:'),
+            Text(t.fontSizeLabel),
             Expanded(
               child: Slider(
                 value: _fontSize,
@@ -137,7 +138,7 @@ class _TextOverlaySectionState extends State<_TextOverlaySection> {
         ),
         Row(
           children: [
-            const Text('Opacity:'),
+            Text(t.opacityLabel),
             Expanded(
               child: Slider(
                 value: _opacity,
@@ -152,7 +153,7 @@ class _TextOverlaySectionState extends State<_TextOverlaySection> {
           ],
         ),
         SwitchListTile(
-          title: const Text('All pages'),
+          title: Text(t.allPagesLabel),
           value: _allPages,
           onChanged: (v) => setState(() => _allPages = v),
           dense: true,
@@ -160,8 +161,8 @@ class _TextOverlaySectionState extends State<_TextOverlaySection> {
         if (!_allPages)
           TextField(
             controller: _pageCtrl,
-            decoration: const InputDecoration(
-                labelText: 'Specific page number', isDense: true),
+            decoration: InputDecoration(
+                labelText: t.specificPageLabel, isDense: true),
             keyboardType: TextInputType.number,
           ),
         const SizedBox(height: 8),
@@ -177,7 +178,7 @@ class _TextOverlaySectionState extends State<_TextOverlaySection> {
                         : int.tryParse(_pageCtrl.text),
                   )
               : null,
-          child: const Text('Apply Overlay'),
+          child: Text(t.applyOverlayButton),
         ),
         ResultCard(result: vm.overlayResult, isLoading: vm.isAddingOverlay),
       ],

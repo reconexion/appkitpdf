@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'core/l10n/app_strings.dart';
 import 'features/conversion/presentation/viewmodels/conversion_view_model.dart';
 import 'features/editing/presentation/viewmodels/editing_view_model.dart';
 import 'features/extras/presentation/viewmodels/extras_view_model.dart';
@@ -20,6 +21,8 @@ class PdfKitApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider<LocaleController>(
+            create: (_) => LocaleController()),
         ChangeNotifierProvider<OrganizationViewModel>(
             create: (_) => Injection.organizationViewModel),
         ChangeNotifierProvider<ConversionViewModel>(
