@@ -25,32 +25,68 @@ class OrganizationViewModel extends ChangeNotifier {
         _rotatePages = rotatePages;
 
   // Merge state
-  List<String> mergeFiles = [];
+  List<String> _mergeFiles = [];
+  List<String> get mergeFiles => _mergeFiles;
+  set mergeFiles(List<String> v) {
+    _mergeFiles = v;
+    notifyListeners();
+  }
+
   bool isMerging = false;
   OperationResult? mergeResult;
 
   // Split state
-  String? splitFile;
+  String? _splitFile;
+  String? get splitFile => _splitFile;
+  set splitFile(String? v) {
+    _splitFile = v;
+    notifyListeners();
+  }
+
   bool isSplitting = false;
   OperationResult? splitResult;
 
   // Remove pages state
-  String? removeFile;
+  String? _removeFile;
+  String? get removeFile => _removeFile;
+  set removeFile(String? v) {
+    _removeFile = v;
+    notifyListeners();
+  }
+
   bool isRemoving = false;
   OperationResult? removeResult;
 
   // Extract pages state
-  String? extractFile;
+  String? _extractFile;
+  String? get extractFile => _extractFile;
+  set extractFile(String? v) {
+    _extractFile = v;
+    notifyListeners();
+  }
+
   bool isExtracting = false;
   OperationResult? extractResult;
 
   // Reorder state
-  String? reorderFile;
+  String? _reorderFile;
+  String? get reorderFile => _reorderFile;
+  set reorderFile(String? v) {
+    _reorderFile = v;
+    notifyListeners();
+  }
+
   bool isReordering = false;
   OperationResult? reorderResult;
 
   // Rotate state
-  String? rotateFile;
+  String? _rotateFile;
+  String? get rotateFile => _rotateFile;
+  set rotateFile(String? v) {
+    _rotateFile = v;
+    notifyListeners();
+  }
+
   bool isRotating = false;
   OperationResult? rotateResult;
 

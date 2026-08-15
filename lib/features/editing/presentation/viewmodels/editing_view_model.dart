@@ -13,11 +13,23 @@ class EditingViewModel extends ChangeNotifier {
   })  : _addPageNumbers = addPageNumbers,
         _addTextOverlay = addTextOverlay;
 
-  String? pageNumberFile;
+  String? _pageNumberFile;
+  String? get pageNumberFile => _pageNumberFile;
+  set pageNumberFile(String? v) {
+    _pageNumberFile = v;
+    notifyListeners();
+  }
+
   bool isAddingPageNumbers = false;
   OperationResult? pageNumberResult;
 
-  String? overlayFile;
+  String? _overlayFile;
+  String? get overlayFile => _overlayFile;
+  set overlayFile(String? v) {
+    _overlayFile = v;
+    notifyListeners();
+  }
+
   bool isAddingOverlay = false;
   OperationResult? overlayResult;
 

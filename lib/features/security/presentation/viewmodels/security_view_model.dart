@@ -15,15 +15,33 @@ class SecurityViewModel extends ChangeNotifier {
         _unprotectPdf = unprotectPdf,
         _compressPdf = compressPdf;
 
-  String? protectFile;
+  String? _protectFile;
+  String? get protectFile => _protectFile;
+  set protectFile(String? v) {
+    _protectFile = v;
+    notifyListeners();
+  }
+
   bool isProtecting = false;
   OperationResult? protectResult;
 
-  String? unprotectFile;
+  String? _unprotectFile;
+  String? get unprotectFile => _unprotectFile;
+  set unprotectFile(String? v) {
+    _unprotectFile = v;
+    notifyListeners();
+  }
+
   bool isUnprotecting = false;
   OperationResult? unprotectResult;
 
-  String? compressFile;
+  String? _compressFile;
+  String? get compressFile => _compressFile;
+  set compressFile(String? v) {
+    _compressFile = v;
+    notifyListeners();
+  }
+
   bool isCompressing = false;
   OperationResult? compressResult;
 

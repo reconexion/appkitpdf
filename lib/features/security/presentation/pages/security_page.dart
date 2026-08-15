@@ -60,6 +60,7 @@ class _ProtectSectionState extends State<_ProtectSection> {
         TextField(
           controller: _pwdCtrl,
           obscureText: _obscure,
+          onChanged: (_) => setState(() {}),
           decoration: InputDecoration(
             labelText: 'Password',
             isDense: true,

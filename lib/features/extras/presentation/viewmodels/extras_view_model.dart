@@ -15,16 +15,40 @@ class ExtrasViewModel extends ChangeNotifier {
         _comparePdfs = comparePdfs,
         _repairPdf = repairPdf;
 
-  String? ocrFile;
+  String? _ocrFile;
+  String? get ocrFile => _ocrFile;
+  set ocrFile(String? v) {
+    _ocrFile = v;
+    notifyListeners();
+  }
+
   bool isOcring = false;
   OperationResult? ocrResult;
 
-  String? compareFile1;
-  String? compareFile2;
+  String? _compareFile1;
+  String? get compareFile1 => _compareFile1;
+  set compareFile1(String? v) {
+    _compareFile1 = v;
+    notifyListeners();
+  }
+
+  String? _compareFile2;
+  String? get compareFile2 => _compareFile2;
+  set compareFile2(String? v) {
+    _compareFile2 = v;
+    notifyListeners();
+  }
+
   bool isComparing = false;
   OperationResult? compareResult;
 
-  String? repairFile;
+  String? _repairFile;
+  String? get repairFile => _repairFile;
+  set repairFile(String? v) {
+    _repairFile = v;
+    notifyListeners();
+  }
+
   bool isRepairing = false;
   OperationResult? repairResult;
 

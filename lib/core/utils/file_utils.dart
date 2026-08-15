@@ -1,7 +1,15 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdfx/pdfx.dart' as pdfx;
 
 class FileUtils {
+  static Future<int> getPdfPageCount(String path) async {
+    final doc = await pdfx.PdfDocument.openFile(path);
+    final count = doc.pagesCount;
+    await doc.close();
+    return count;
+  }
+
   static Future<String> getOutputPath(String operation, {String extension = 'pdf'}) async {
     final dir = await getApplicationDocumentsDirectory();
     final timestamp = DateTime.now().millisecondsSinceEpoch;

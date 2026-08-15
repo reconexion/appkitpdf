@@ -24,23 +24,53 @@ class ConversionViewModel extends ChangeNotifier {
         _pdfToPpt = pdfToPpt,
         _htmlToPdf = htmlToPdf;
 
-  String? pdfToImagesFile;
+  String? _pdfToImagesFile;
+  String? get pdfToImagesFile => _pdfToImagesFile;
+  set pdfToImagesFile(String? v) {
+    _pdfToImagesFile = v;
+    notifyListeners();
+  }
+
   bool isConvertingToImages = false;
   OperationResult? pdfToImagesResult;
 
-  List<String> imagesToPdfFiles = [];
+  List<String> _imagesToPdfFiles = [];
+  List<String> get imagesToPdfFiles => _imagesToPdfFiles;
+  set imagesToPdfFiles(List<String> v) {
+    _imagesToPdfFiles = v;
+    notifyListeners();
+  }
+
   bool isConvertingToPdf = false;
   OperationResult? imagesToPdfResult;
 
-  String? pdfToWordFile;
+  String? _pdfToWordFile;
+  String? get pdfToWordFile => _pdfToWordFile;
+  set pdfToWordFile(String? v) {
+    _pdfToWordFile = v;
+    notifyListeners();
+  }
+
   bool isConvertingToWord = false;
   OperationResult? pdfToWordResult;
 
-  String? pdfToExcelFile;
+  String? _pdfToExcelFile;
+  String? get pdfToExcelFile => _pdfToExcelFile;
+  set pdfToExcelFile(String? v) {
+    _pdfToExcelFile = v;
+    notifyListeners();
+  }
+
   bool isConvertingToExcel = false;
   OperationResult? pdfToExcelResult;
 
-  String? pdfToPptFile;
+  String? _pdfToPptFile;
+  String? get pdfToPptFile => _pdfToPptFile;
+  set pdfToPptFile(String? v) {
+    _pdfToPptFile = v;
+    notifyListeners();
+  }
+
   bool isConvertingToPpt = false;
   OperationResult? pdfToPptResult;
 
