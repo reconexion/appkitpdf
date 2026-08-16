@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/l10n/app_strings.dart';
+import 'core/theme/app_theme.dart';
 import 'features/conversion/presentation/viewmodels/conversion_view_model.dart';
 import 'features/editing/presentation/viewmodels/editing_view_model.dart';
 import 'features/extras/presentation/viewmodels/extras_view_model.dart';
@@ -35,12 +36,9 @@ class PdfKitApp extends StatelessWidget {
             create: (_) => Injection.extrasViewModel),
       ],
       child: MaterialApp(
-        title: 'PDF Kit',
+        title: 'KitPDF',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.dark,
         home: const HomePage(),
       ),
     );

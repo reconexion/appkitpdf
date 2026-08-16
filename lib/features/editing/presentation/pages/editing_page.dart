@@ -2,7 +2,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/widgets/feature_grid.dart';
 import '../../../../core/widgets/result_card.dart';
+import '../../../../core/widgets/terminal_widgets.dart';
 import '../../domain/repositories/editing_repository.dart';
 import '../viewmodels/editing_view_model.dart';
 
@@ -11,15 +13,47 @@ class EditingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(context.t.editingPageTitle)),
+    final t = context.t;
+    return TerminalScaffold(
+      tag: 'edit',
+      title: t.editingPageTitle,
+      body: FeatureGrid(
+        items: [
+          FeatureGridItem(
+            icon: Icons.format_list_numbered,
+            title: t.pageNumbersTitle,
+            subtitle: t.pageNumbersHint,
+            page: const _OperationPage(
+                tag: 'pagenum', child: _PageNumbersSection()),
+          ),
+          FeatureGridItem(
+            icon: Icons.text_fields,
+            title: t.overlayTitle,
+            subtitle: t.overlayHint,
+            page: const _OperationPage(
+                tag: 'overlay', child: _TextOverlaySection()),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Wraps a single operation section in its own page, reached from the
+/// operation grid above.
+class _OperationPage extends StatelessWidget {
+  final String tag;
+  final Widget child;
+  const _OperationPage({required this.tag, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return TerminalScaffold(
+      tag: tag,
+      title: context.t.editingPageTitle,
       body: ListView(
         padding: const EdgeInsets.all(12),
-        children: const [
-          _PageNumbersSection(),
-          Divider(),
-          _TextOverlaySection(),
-        ],
+        children: [child],
       ),
     );
   }
@@ -38,8 +72,9 @@ class _PageNumbersSectionState extends State<_PageNumbersSection> {
   Widget build(BuildContext context) {
     final vm = context.watch<EditingViewModel>();
     final t = context.t;
-    return _Section(
+    return TerminalSection(
       title: t.pageNumbersTitle,
+      initiallyExpanded: true,
       children: [
         FileTile(
           path: vm.pageNumberFile,
@@ -50,8 +85,10 @@ class _PageNumbersSectionState extends State<_PageNumbersSection> {
           },
           onClear: () => vm.pageNumberFile = null,
         ),
+        const SizedBox(height: 8),
         DropdownButton<PageNumberPosition>(
           value: _position,
+          isExpanded: true,
           items: [
             DropdownMenuItem(
                 value: PageNumberPosition.bottomCenter,
@@ -103,8 +140,9 @@ class _TextOverlaySectionState extends State<_TextOverlaySection> {
   Widget build(BuildContext context) {
     final vm = context.watch<EditingViewModel>();
     final t = context.t;
-    return _Section(
+    return TerminalSection(
       title: t.overlayTitle,
+      initiallyExpanded: true,
       children: [
         FileTile(
           path: vm.overlayFile,
@@ -115,14 +153,14 @@ class _TextOverlaySectionState extends State<_TextOverlaySection> {
           },
           onClear: () => vm.overlayFile = null,
         ),
+        const SizedBox(height: 8),
         TextField(
           controller: _textCtrl,
-          decoration: InputDecoration(
-              labelText: t.overlayTextLabel, isDense: true),
+          decoration: InputDecoration(labelText: t.overlayTextLabel),
         ),
         Row(
           children: [
-            Text(t.fontSizeLabel),
+            Text(t.fontSizeLabel, style: Theme.of(context).textTheme.bodySmall),
             Expanded(
               child: Slider(
                 value: _fontSize,
@@ -133,12 +171,13 @@ class _TextOverlaySectionState extends State<_TextOverlaySection> {
                 onChanged: (v) => setState(() => _fontSize = v),
               ),
             ),
-            Text(_fontSize.round().toString()),
+            Text(_fontSize.round().toString(),
+                style: Theme.of(context).textTheme.bodyMedium),
           ],
         ),
         Row(
           children: [
-            Text(t.opacityLabel),
+            Text(t.opacityLabel, style: Theme.of(context).textTheme.bodySmall),
             Expanded(
               child: Slider(
                 value: _opacity,
@@ -149,55 +188,40 @@ class _TextOverlaySectionState extends State<_TextOverlaySection> {
                 onChanged: (v) => setState(() => _opacity = v),
               ),
             ),
-            Text(_opacity.toStringAsFixed(1)),
+            Text(_opacity.toStringAsFixed(1),
+                style: Theme.of(context).textTheme.bodyMedium),
           ],
         ),
         SwitchListTile(
-          title: Text(t.allPagesLabel),
+          title: Text(t.allPagesLabel, style: Theme.of(context).textTheme.bodyMedium),
           value: _allPages,
           onChanged: (v) => setState(() => _allPages = v),
           dense: true,
+          contentPadding: EdgeInsets.zero,
         ),
         if (!_allPages)
           TextField(
             controller: _pageCtrl,
-            decoration: InputDecoration(
-                labelText: t.specificPageLabel, isDense: true),
+            decoration: InputDecoration(labelText: t.specificPageLabel),
             keyboardType: TextInputType.number,
           ),
         const SizedBox(height: 8),
         ElevatedButton(
           onPressed: vm.overlayFile != null && !vm.isAddingOverlay
               ? () => vm.addTextOverlay(
-                    _textCtrl.text,
-                    _fontSize,
-                    _opacity,
-                    allPages: _allPages,
-                    specificPage: _allPages
-                        ? null
-                        : int.tryParse(_pageCtrl.text),
-                  )
+            _textCtrl.text,
+            _fontSize,
+            _opacity,
+            allPages: _allPages,
+            specificPage: _allPages
+                ? null
+                : int.tryParse(_pageCtrl.text),
+          )
               : null,
           child: Text(t.applyOverlayButton),
         ),
         ResultCard(result: vm.overlayResult, isLoading: vm.isAddingOverlay),
       ],
-    );
-  }
-}
-
-class _Section extends StatelessWidget {
-  final String title;
-  final List<Widget> children;
-  const _Section({required this.title, required this.children});
-
-  @override
-  Widget build(BuildContext context) {
-    return ExpansionTile(
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-      initiallyExpanded: true,
-      childrenPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      children: children,
     );
   }
 }

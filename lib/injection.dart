@@ -31,6 +31,7 @@ class Injection {
     extractPages: ExtractPages(_orgRepo),
     reorderPages: ReorderPages(_orgRepo),
     rotatePages: RotatePages(_orgRepo),
+    renamePdf: RenamePdf(_orgRepo),
   );
 
   // ─── Conversion ─────────────────────────────────────────────

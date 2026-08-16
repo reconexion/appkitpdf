@@ -63,4 +63,13 @@ class OrganizationRepositoryImpl implements OrganizationRepository {
       return Result.failure(e.toString());
     }
   }
+
+  @override
+  Future<Result<String>> renamePdf(String path, String newName) async {
+    try {
+      return Result.success(await _ds.renamePdf(path, newName));
+    } catch (e) {
+      return Result.failure(e.toString());
+    }
+  }
 }

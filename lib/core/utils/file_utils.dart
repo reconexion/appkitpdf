@@ -21,6 +21,25 @@ class FileUtils {
     return '${dir.path}/${name}_${DateTime.now().millisecondsSinceEpoch}.$extension';
   }
 
+  /// Builds a fresh output path for a user-chosen file name, sanitized and
+  /// de-duplicated (appends " (1)", " (2)", ... if the name is taken).
+  static Future<String> getRenamedPath(String desiredName,
+      {String extension = 'pdf'}) async {
+    final dir = await getApplicationDocumentsDirectory();
+    var sanitized = desiredName.trim();
+    sanitized = sanitized.replaceAll(RegExp('\\.$extension\$', caseSensitive: false), '');
+    sanitized = sanitized.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+    if (sanitized.isEmpty) sanitized = 'renamed';
+
+    var candidate = '${dir.path}/$sanitized.$extension';
+    var counter = 1;
+    while (await File(candidate).exists()) {
+      candidate = '${dir.path}/$sanitized ($counter).$extension';
+      counter++;
+    }
+    return candidate;
+  }
+
   static String xmlEscape(String s) => s
       .replaceAll('&', '&amp;')
       .replaceAll('<', '&lt;')

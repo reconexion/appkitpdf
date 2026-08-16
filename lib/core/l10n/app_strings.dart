@@ -39,6 +39,7 @@ abstract class AppStrings {
   String get securitySubtitle;
   String get extrasTitle;
   String get extrasSubtitle;
+  String get renameSubtitle;
 
   // ─── Shared widgets (ResultCard / FileTile / page picker) ──
   String get processing;
@@ -89,6 +90,17 @@ abstract class AppStrings {
   String get rotatePagesLabel;
   String get rotateButton;
 
+  String get renameTitle;
+  String get newNameLabel;
+  String get renameButton;
+
+  String get mergeHint;
+  String get splitHint;
+  String get removeHint;
+  String get extractHint;
+  String get reorderHint;
+  String get rotateHint;
+
   // ─── Conversion ─────────────────────────────────────────────
   String get conversionPageTitle;
   String get pdfToImagesTitle;
@@ -110,6 +122,13 @@ abstract class AppStrings {
   String get htmlToPdfHint;
   String get convertToPdfButton;
 
+  String get pdfToImagesHint;
+  String get imagesToPdfHint;
+  String get pdfToWordHint;
+  String get pdfToExcelHint;
+  String get pdfToPptHint;
+  String get htmlToPdfCardHint;
+
   // ─── Editing ────────────────────────────────────────────────
   String get editingPageTitle;
   String get pageNumbersTitle;
@@ -125,6 +144,9 @@ abstract class AppStrings {
   String get specificPageLabel;
   String get applyOverlayButton;
 
+  String get pageNumbersHint;
+  String get overlayHint;
+
   // ─── Security ───────────────────────────────────────────────
   String get securityPageTitle;
   String get protectTitle;
@@ -136,6 +158,10 @@ abstract class AppStrings {
   String get compressTitle;
   String get compressDesc;
   String get compressButton;
+
+  String get protectHint;
+  String get unprotectHint;
+  String get compressHint;
 
   // ─── Extras ─────────────────────────────────────────────────
   String get extrasPageTitle;
@@ -150,11 +176,15 @@ abstract class AppStrings {
   String get repairTitle;
   String get repairDesc;
   String get repairButton;
+
+  String get ocrHint;
+  String get compareHint;
+  String get repairHint;
 }
 
 class EnStrings implements AppStrings {
   @override
-  String get appTitle => 'PDF Kit';
+  String get appTitle => 'KitPDF';
   @override
   String get languageTooltip => 'Language';
 
@@ -180,6 +210,8 @@ class EnStrings implements AppStrings {
   String get extrasTitle => 'Extras';
   @override
   String get extrasSubtitle => 'OCR · Compare PDFs · Repair corrupted PDF';
+  @override
+  String get renameSubtitle => 'Give your PDF a new name';
 
   @override
   String get processing => 'Processing...';
@@ -269,6 +301,26 @@ class EnStrings implements AppStrings {
   String get rotateButton => 'Rotate';
 
   @override
+  String get renameTitle => 'Rename PDF';
+  @override
+  String get newNameLabel => 'New file name';
+  @override
+  String get renameButton => 'Rename';
+
+  @override
+  String get mergeHint => 'Combine multiple PDFs into one';
+  @override
+  String get splitHint => 'Break a PDF into separate files';
+  @override
+  String get removeHint => 'Delete specific pages';
+  @override
+  String get extractHint => 'Pull out selected pages';
+  @override
+  String get reorderHint => 'Change the page order';
+  @override
+  String get rotateHint => 'Rotate pages 90/180/270°';
+
+  @override
   String get conversionPageTitle => 'Conversion';
   @override
   String get pdfToImagesTitle => 'PDF → JPG/Images';
@@ -308,6 +360,19 @@ class EnStrings implements AppStrings {
   String get convertToPdfButton => 'Convert to PDF';
 
   @override
+  String get pdfToImagesHint => 'Export pages as images';
+  @override
+  String get imagesToPdfHint => 'Build a PDF from images';
+  @override
+  String get pdfToWordHint => 'Extract text into Word';
+  @override
+  String get pdfToExcelHint => 'Extract text into Excel';
+  @override
+  String get pdfToPptHint => 'Turn text into slides';
+  @override
+  String get htmlToPdfCardHint => 'Turn HTML into a PDF';
+
+  @override
   String get editingPageTitle => 'Editing';
   @override
   String get pageNumbersTitle => 'Add Page Numbers';
@@ -335,6 +400,11 @@ class EnStrings implements AppStrings {
   String get applyOverlayButton => 'Apply Overlay';
 
   @override
+  String get pageNumbersHint => 'Stamp page numbers';
+  @override
+  String get overlayHint => 'Add text or watermark';
+
+  @override
   String get securityPageTitle => 'Security';
   @override
   String get protectTitle => 'Protect with Password';
@@ -354,6 +424,13 @@ class EnStrings implements AppStrings {
   String get compressDesc => 'Reduces file size using maximum compression.';
   @override
   String get compressButton => 'Compress';
+
+  @override
+  String get protectHint => 'Lock with a password';
+  @override
+  String get unprotectHint => 'Remove the password';
+  @override
+  String get compressHint => 'Shrink the file size';
 
   @override
   String get extrasPageTitle => 'Extras';
@@ -381,11 +458,18 @@ class EnStrings implements AppStrings {
       'Attempts to load and re-save the PDF, rebuilding its structure.';
   @override
   String get repairButton => 'Repair PDF';
+
+  @override
+  String get ocrHint => 'Make scans searchable';
+  @override
+  String get compareHint => 'Diff two PDFs';
+  @override
+  String get repairHint => 'Fix a corrupted PDF';
 }
 
 class EsStrings implements AppStrings {
   @override
-  String get appTitle => 'PDF Kit';
+  String get appTitle => 'KitPDF';
   @override
   String get languageTooltip => 'Idioma';
 
@@ -412,6 +496,8 @@ class EsStrings implements AppStrings {
   String get extrasTitle => 'Extras';
   @override
   String get extrasSubtitle => 'OCR · Comparar PDFs · Reparar PDF dañado';
+  @override
+  String get renameSubtitle => 'Dale un nuevo nombre a tu PDF';
 
   @override
   String get processing => 'Procesando...';
@@ -505,6 +591,26 @@ class EsStrings implements AppStrings {
   String get rotateButton => 'Rotar';
 
   @override
+  String get renameTitle => 'Renombrar PDF';
+  @override
+  String get newNameLabel => 'Nuevo nombre de archivo';
+  @override
+  String get renameButton => 'Renombrar';
+
+  @override
+  String get mergeHint => 'Combina varios PDFs en uno';
+  @override
+  String get splitHint => 'Divide un PDF en varios archivos';
+  @override
+  String get removeHint => 'Elimina páginas específicas';
+  @override
+  String get extractHint => 'Extrae páginas seleccionadas';
+  @override
+  String get reorderHint => 'Cambia el orden de las páginas';
+  @override
+  String get rotateHint => 'Rota páginas 90/180/270°';
+
+  @override
   String get conversionPageTitle => 'Conversión';
   @override
   String get pdfToImagesTitle => 'PDF → JPG/Imágenes';
@@ -544,6 +650,19 @@ class EsStrings implements AppStrings {
   String get convertToPdfButton => 'Convertir a PDF';
 
   @override
+  String get pdfToImagesHint => 'Exporta páginas como imágenes';
+  @override
+  String get imagesToPdfHint => 'Crea un PDF con imágenes';
+  @override
+  String get pdfToWordHint => 'Extrae el texto a Word';
+  @override
+  String get pdfToExcelHint => 'Extrae el texto a Excel';
+  @override
+  String get pdfToPptHint => 'Convierte texto en diapositivas';
+  @override
+  String get htmlToPdfCardHint => 'Convierte HTML en PDF';
+
+  @override
   String get editingPageTitle => 'Edición';
   @override
   String get pageNumbersTitle => 'Agregar Números de Página';
@@ -571,6 +690,11 @@ class EsStrings implements AppStrings {
   String get applyOverlayButton => 'Aplicar Superposición';
 
   @override
+  String get pageNumbersHint => 'Agrega números de página';
+  @override
+  String get overlayHint => 'Agrega texto o marca de agua';
+
+  @override
   String get securityPageTitle => 'Seguridad';
   @override
   String get protectTitle => 'Proteger con Contraseña';
@@ -590,6 +714,13 @@ class EsStrings implements AppStrings {
   String get compressDesc => 'Reduce el tamaño del archivo con compresión máxima.';
   @override
   String get compressButton => 'Comprimir';
+
+  @override
+  String get protectHint => 'Bloquea con contraseña';
+  @override
+  String get unprotectHint => 'Quita la contraseña';
+  @override
+  String get compressHint => 'Reduce el tamaño';
 
   @override
   String get extrasPageTitle => 'Extras';
@@ -618,4 +749,11 @@ class EsStrings implements AppStrings {
       'Intenta cargar y volver a guardar el PDF, reconstruyendo su estructura.';
   @override
   String get repairButton => 'Reparar PDF';
+
+  @override
+  String get ocrHint => 'Hace legibles los escaneos';
+  @override
+  String get compareHint => 'Compara dos PDFs';
+  @override
+  String get repairHint => 'Repara un PDF dañado';
 }

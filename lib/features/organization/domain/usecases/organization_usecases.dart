@@ -83,3 +83,17 @@ class RotatePages implements UseCase<String, RotatePagesParams> {
   Future<Result<String>> call(RotatePagesParams p) =>
       _repo.rotatePages(p.path, p.pageRotations);
 }
+
+class RenamePdfParams {
+  final String path;
+  final String newName;
+  const RenamePdfParams({required this.path, required this.newName});
+}
+
+class RenamePdf implements UseCase<String, RenamePdfParams> {
+  final OrganizationRepository _repo;
+  RenamePdf(this._repo);
+  @override
+  Future<Result<String>> call(RenamePdfParams p) =>
+      _repo.renamePdf(p.path, p.newName);
+}

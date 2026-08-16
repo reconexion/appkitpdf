@@ -3,6 +3,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
 import '../l10n/app_strings.dart';
 import '../result/result.dart';
+import '../theme/app_theme.dart';
 
 class ResultCard extends StatelessWidget {
   final OperationResult? result;
@@ -32,12 +33,17 @@ class ResultCard extends StatelessWidget {
     if (isLoading) {
       return Padding(
         key: const ValueKey('loading'),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const LinearProgressIndicator(),
-            const SizedBox(height: 8),
-            Text(t.processing),
+            const LinearProgressIndicator(minHeight: 2),
+            const SizedBox(height: 10),
+            Text(
+              t.processing.toUpperCase(),
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ],
         ),
       );
@@ -48,20 +54,24 @@ class ResultCard extends StatelessWidget {
       return Container(
         key: const ValueKey('error'),
         margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.red.shade50,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.red.shade200),
+        padding: const EdgeInsets.all(14),
+        decoration: const BoxDecoration(
+          color: Colors.black,
+          border: Border.fromBorderSide(BorderSide(color: AppColors.red)),
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
-            const SizedBox(width: 8),
+            const Icon(Icons.error_outline, color: AppColors.red, size: 18),
+            const SizedBox(width: 10),
             Expanded(
-              child: Text(t.errorMessage(result!.error ?? ''),
-                  style: TextStyle(color: Colors.red.shade800)),
+              child: Text(
+                t.errorMessage(result!.error ?? ''),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: AppColors.red, height: 1.4),
+              ),
             ),
           ],
         ),
@@ -74,16 +84,17 @@ class ResultCard extends StatelessWidget {
     return Container(
       key: const ValueKey('success'),
       margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.green.shade50,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.green.shade200),
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
+        color: Colors.black,
+        border: Border.fromBorderSide(BorderSide(color: AppColors.red)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               TweenAnimationBuilder<double>(
                 tween: Tween(begin: 0, end: 1),
@@ -91,38 +102,74 @@ class ResultCard extends StatelessWidget {
                 curve: Curves.elasticOut,
                 builder: (context, v, child) =>
                     Transform.scale(scale: v, child: child),
-                child: Icon(Icons.check_circle,
-                    color: Colors.green.shade700, size: 20),
+                child:
+                const Icon(Icons.check_circle, color: AppColors.red, size: 18),
               ),
-              const SizedBox(width: 6),
-              Text(t.done,
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green.shade800)),
+              const SizedBox(width: 8),
+              Text(t.done.toUpperCase(), style: Theme.of(context).textTheme.labelLarge),
             ],
           ),
-          const SizedBox(height: 4),
-          ...paths.map((p) => Text(p.split('/').last,
-              style: const TextStyle(fontSize: 12))),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
+          ...paths.map((p) => Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Text(
+              p.split('/').last,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.4),
+            ),
+          )),
+          const SizedBox(height: 14),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               if (paths.isNotEmpty)
-                TextButton.icon(
-                  icon: const Icon(Icons.open_in_new, size: 16),
-                  label: Text(t.open),
+                _ActionButton(
+                  icon: Icons.open_in_new,
+                  label: t.open,
                   onPressed: () => OpenFilex.open(paths.first),
                 ),
+              if (paths.isNotEmpty) const SizedBox(width: 10),
               if (paths.isNotEmpty)
-                TextButton.icon(
-                  icon: const Icon(Icons.share, size: 16),
-                  label: Text(t.share),
-                  onPressed: () => Share.shareXFiles(
-                      paths.map((p) => XFile(p)).toList()),
+                _ActionButton(
+                  icon: Icons.ios_share,
+                  label: t.share,
+                  onPressed: () =>
+                      Share.shareXFiles(paths.map((p) => XFile(p)).toList()),
                 ),
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  const _ActionButton(
+      {required this.icon, required this.label, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: const BoxDecoration(
+          border: Border.fromBorderSide(BorderSide(color: AppColors.red)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: AppColors.red),
+            const SizedBox(width: 6),
+            Text(label.toUpperCase(), style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
       ),
     );
   }
@@ -151,16 +198,9 @@ class FileTile extends StatelessWidget {
       curve: Curves.easeOut,
       margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: selected
-            ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.35)
-            : Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: selected
-              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.4)
-              : Theme.of(context).colorScheme.outlineVariant,
-        ),
+      decoration: const BoxDecoration(
+        color: Colors.black,
+        border: Border.fromBorderSide(BorderSide(color: AppColors.red)),
       ),
       child: ListTile(
         dense: true,
@@ -168,27 +208,36 @@ class FileTile extends StatelessWidget {
         leading: AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
           child: Icon(
-            selected ? Icons.picture_as_pdf : Icons.upload_file,
+            selected ? Icons.picture_as_pdf_outlined : Icons.upload_file,
             key: ValueKey(selected),
-            size: 20,
-            color: selected
-                ? Theme.of(context).colorScheme.primary
-                : Colors.grey,
+            size: 18,
+            color: AppColors.red,
           ),
         ),
-        title: Text(path?.split('/').last ?? label ?? t.noFileSelected,
-            style: TextStyle(
-                color: selected ? null : Colors.grey,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-                fontSize: 13)),
+        title: Text(
+          path?.split('/').last ?? label ?? t.noFileSelected,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: selected ? AppColors.red : AppColors.redSoft,
+          ),
+        ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextButton(onPressed: onTap, child: Text(t.select)),
+            TextButton(
+              onPressed: onTap,
+              child: Text(
+                t.select.toUpperCase(),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: AppColors.red, fontWeight: FontWeight.w700),
+              ),
+            ),
             if (selected && onClear != null)
               IconButton(
-                  icon: const Icon(Icons.close, size: 16),
-                  onPressed: onClear),
+                icon: const Icon(Icons.close, size: 16, color: AppColors.red),
+                onPressed: onClear,
+              ),
           ],
         ),
       ),

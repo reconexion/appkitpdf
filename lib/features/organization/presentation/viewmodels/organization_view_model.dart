@@ -9,6 +9,7 @@ class OrganizationViewModel extends ChangeNotifier {
   final ExtractPages _extractPages;
   final ReorderPages _reorderPages;
   final RotatePages _rotatePages;
+  final RenamePdf _renamePdf;
 
   OrganizationViewModel({
     required MergePdfs mergePdfs,
@@ -17,12 +18,14 @@ class OrganizationViewModel extends ChangeNotifier {
     required ExtractPages extractPages,
     required ReorderPages reorderPages,
     required RotatePages rotatePages,
+    required RenamePdf renamePdf,
   })  : _mergePdfs = mergePdfs,
         _splitPdf = splitPdf,
         _removePages = removePages,
         _extractPages = extractPages,
         _reorderPages = reorderPages,
-        _rotatePages = rotatePages;
+        _rotatePages = rotatePages,
+        _renamePdf = renamePdf;
 
   // Merge state
   List<String> _mergeFiles = [];
@@ -89,6 +92,17 @@ class OrganizationViewModel extends ChangeNotifier {
 
   bool isRotating = false;
   OperationResult? rotateResult;
+
+  // Rename state
+  String? _renameFile;
+  String? get renameFile => _renameFile;
+  set renameFile(String? v) {
+    _renameFile = v;
+    notifyListeners();
+  }
+
+  bool isRenaming = false;
+  OperationResult? renameResult;
 
   Future<void> merge() async {
     if (mergeFiles.length < 2) return;
@@ -176,6 +190,21 @@ class OrganizationViewModel extends ChangeNotifier {
         ? OperationResult.success(outputPath: result.data)
         : OperationResult.failure(result.error!);
     isRotating = false;
+    notifyListeners();
+  }
+
+  Future<void> rename(String newName) async {
+    if (renameFile == null || newName.trim().isEmpty) return;
+    isRenaming = true;
+    renameResult = null;
+    notifyListeners();
+
+    final result = await _renamePdf(
+        RenamePdfParams(path: renameFile!, newName: newName));
+    renameResult = result.isSuccess
+        ? OperationResult.success(outputPath: result.data)
+        : OperationResult.failure(result.error!);
+    isRenaming = false;
     notifyListeners();
   }
 }

@@ -2,7 +2,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/widgets/feature_grid.dart';
 import '../../../../core/widgets/result_card.dart';
+import '../../../../core/widgets/terminal_widgets.dart';
 import '../viewmodels/extras_view_model.dart';
 
 class ExtrasPage extends StatelessWidget {
@@ -10,17 +12,53 @@ class ExtrasPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(context.t.extrasPageTitle)),
+    final t = context.t;
+    return TerminalScaffold(
+      tag: 'extras',
+      title: t.extrasPageTitle,
+      body: FeatureGrid(
+        items: [
+          FeatureGridItem(
+            icon: Icons.document_scanner_outlined,
+            title: t.ocrTitle,
+            subtitle: t.ocrHint,
+            page: const _OperationPage(tag: 'ocr', child: _OcrSection()),
+          ),
+          FeatureGridItem(
+            icon: Icons.compare_arrows,
+            title: t.compareTitle,
+            subtitle: t.compareHint,
+            page: const _OperationPage(
+                tag: 'compare', child: _CompareSection()),
+          ),
+          FeatureGridItem(
+            icon: Icons.build_outlined,
+            title: t.repairTitle,
+            subtitle: t.repairHint,
+            page: const _OperationPage(
+                tag: 'repair', child: _RepairSection()),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Wraps a single operation section in its own page, reached from the
+/// operation grid above.
+class _OperationPage extends StatelessWidget {
+  final String tag;
+  final Widget child;
+  const _OperationPage({required this.tag, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return TerminalScaffold(
+      tag: tag,
+      title: context.t.extrasPageTitle,
       body: ListView(
         padding: const EdgeInsets.all(12),
-        children: const [
-          _OcrSection(),
-          Divider(),
-          _CompareSection(),
-          Divider(),
-          _RepairSection(),
-        ],
+        children: [child],
       ),
     );
   }
@@ -33,11 +71,12 @@ class _OcrSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<ExtrasViewModel>();
     final t = context.t;
-    return _Section(
+    return TerminalSection(
       title: t.ocrTitle,
+      initiallyExpanded: true,
       children: [
-        Text(t.ocrDesc,
-            style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(t.ocrDesc, style: Theme.of(context).textTheme.bodySmall),
+        const SizedBox(height: 8),
         FileTile(
           path: vm.ocrFile,
           onTap: () async {
@@ -50,7 +89,7 @@ class _OcrSection extends StatelessWidget {
         const SizedBox(height: 8),
         ElevatedButton(
           onPressed:
-              vm.ocrFile != null && !vm.isOcring ? () => vm.ocr() : null,
+          vm.ocrFile != null && !vm.isOcring ? () => vm.ocr() : null,
           child: Text(t.runOcrButton),
         ),
         ResultCard(result: vm.ocrResult, isLoading: vm.isOcring),
@@ -66,11 +105,12 @@ class _CompareSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<ExtrasViewModel>();
     final t = context.t;
-    return _Section(
+    return TerminalSection(
       title: t.compareTitle,
+      initiallyExpanded: true,
       children: [
-        Text(t.compareDesc,
-            style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(t.compareDesc, style: Theme.of(context).textTheme.bodySmall),
+        const SizedBox(height: 8),
         FileTile(
           path: vm.compareFile1,
           label: t.pdf1Label,
@@ -94,8 +134,8 @@ class _CompareSection extends StatelessWidget {
         const SizedBox(height: 8),
         ElevatedButton(
           onPressed: vm.compareFile1 != null &&
-                  vm.compareFile2 != null &&
-                  !vm.isComparing
+              vm.compareFile2 != null &&
+              !vm.isComparing
               ? () => vm.compare()
               : null,
           child: Text(t.compareButton),
@@ -113,11 +153,12 @@ class _RepairSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<ExtrasViewModel>();
     final t = context.t;
-    return _Section(
+    return TerminalSection(
       title: t.repairTitle,
+      initiallyExpanded: true,
       children: [
-        Text(t.repairDesc,
-            style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(t.repairDesc, style: Theme.of(context).textTheme.bodySmall),
+        const SizedBox(height: 8),
         FileTile(
           path: vm.repairFile,
           onTap: () async {
@@ -136,22 +177,6 @@ class _RepairSection extends StatelessWidget {
         ),
         ResultCard(result: vm.repairResult, isLoading: vm.isRepairing),
       ],
-    );
-  }
-}
-
-class _Section extends StatelessWidget {
-  final String title;
-  final List<Widget> children;
-  const _Section({required this.title, required this.children});
-
-  @override
-  Widget build(BuildContext context) {
-    return ExpansionTile(
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-      initiallyExpanded: true,
-      childrenPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      children: children,
     );
   }
 }

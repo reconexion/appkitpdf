@@ -2,9 +2,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/file_utils.dart';
+import '../../../../core/widgets/feature_grid.dart';
 import '../../../../core/widgets/pdf_page_picker.dart';
 import '../../../../core/widgets/result_card.dart';
+import '../../../../core/widgets/terminal_widgets.dart';
 import '../viewmodels/organization_view_model.dart';
 
 enum _InputMode { text, visual }
@@ -14,23 +17,75 @@ class OrganizationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(context.t.organizationPageTitle)),
+    final t = context.t;
+    return TerminalScaffold(
+      tag: 'organize',
+      title: t.organizationPageTitle,
+      body: FeatureGrid(
+        items: [
+          FeatureGridItem(
+            icon: Icons.merge_type,
+            title: t.mergeTitle,
+            subtitle: t.mergeHint,
+            page: const _OperationPage(
+                tag: 'merge', child: _MergeSection()),
+          ),
+          FeatureGridItem(
+            icon: Icons.call_split,
+            title: t.splitTitle,
+            subtitle: t.splitHint,
+            page: const _OperationPage(
+                tag: 'split', child: _SplitSection()),
+          ),
+          FeatureGridItem(
+            icon: Icons.delete_outline,
+            title: t.removeTitle,
+            subtitle: t.removeHint,
+            page: const _OperationPage(
+                tag: 'remove', child: _RemovePagesSection()),
+          ),
+          FeatureGridItem(
+            icon: Icons.content_cut,
+            title: t.extractTitle,
+            subtitle: t.extractHint,
+            page: const _OperationPage(
+                tag: 'extract', child: _ExtractPagesSection()),
+          ),
+          FeatureGridItem(
+            icon: Icons.reorder,
+            title: t.reorderTitle,
+            subtitle: t.reorderHint,
+            page: const _OperationPage(
+                tag: 'reorder', child: _ReorderSection()),
+          ),
+          FeatureGridItem(
+            icon: Icons.rotate_right,
+            title: t.rotateTitle,
+            subtitle: t.rotateHint,
+            page: const _OperationPage(
+                tag: 'rotate', child: _RotateSection()),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Wraps a single operation section in its own page, reached from the
+/// operation grid above.
+class _OperationPage extends StatelessWidget {
+  final String tag;
+  final Widget child;
+  const _OperationPage({required this.tag, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return TerminalScaffold(
+      tag: tag,
+      title: context.t.organizationPageTitle,
       body: ListView(
         padding: const EdgeInsets.all(12),
-        children: const [
-          _MergeSection(),
-          Divider(),
-          _SplitSection(),
-          Divider(),
-          _RemovePagesSection(),
-          Divider(),
-          _ExtractPagesSection(),
-          Divider(),
-          _ReorderSection(),
-          Divider(),
-          _RotateSection(),
-        ],
+        children: [child],
       ),
     );
   }
@@ -81,10 +136,12 @@ class _VisualHint extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         children: [
-          Icon(Icons.info_outline, size: 16, color: Colors.grey.shade600),
+          const Icon(Icons.info_outline, size: 16, color: AppColors.redSoft),
           const SizedBox(width: 6),
-          Text(context.t.visualHint,
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+          Expanded(
+            child: Text(context.t.visualHint,
+                style: Theme.of(context).textTheme.bodySmall),
+          ),
         ],
       ),
     );
@@ -98,8 +155,9 @@ class _MergeSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<OrganizationViewModel>();
     final t = context.t;
-    return _Section(
+    return TerminalSection(
       title: t.mergeTitle,
+      initiallyExpanded: true,
       children: [
         ElevatedButton(
           onPressed: () async {
@@ -118,7 +176,7 @@ class _MergeSection extends StatelessWidget {
           Text(t.filesSelected(vm.mergeFiles.length)),
           ...vm.mergeFiles
               .map((p) => Text('• ${p.split('/').last}',
-                  style: const TextStyle(fontSize: 12))),
+              style: Theme.of(context).textTheme.bodySmall)),
         ],
         const SizedBox(height: 8),
         ElevatedButton(
@@ -186,8 +244,9 @@ class _SplitSectionState extends State<_SplitSection> {
     final vm = context.watch<OrganizationViewModel>();
     final t = context.t;
     final ranges = _computeRanges();
-    return _Section(
+    return TerminalSection(
       title: t.splitTitle,
+      initiallyExpanded: true,
       children: [
         FileTile(
           path: vm.splitFile,
@@ -212,43 +271,43 @@ class _SplitSectionState extends State<_SplitSection> {
         else if (vm.splitFile == null)
           const _VisualHint()
         else ...[
-          Text(t.visualSplitHint,
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-          PdfPageMultiSelect(
-            path: vm.splitFile!,
-            selected: _visualCurrent,
-            onChanged: (s) => setState(() => _visualCurrent = s),
-            actionsBuilder: (total) => PageSelectAllActions(
-              totalPages: total,
-              onSelectAll: () => setState(() => _visualCurrent =
-                  Set.from(List.generate(total, (i) => i + 1))),
-              onClear: () => setState(() => _visualCurrent = {}),
+            Text(t.visualSplitHint,
+                style: Theme.of(context).textTheme.bodySmall),
+            PdfPageMultiSelect(
+              path: vm.splitFile!,
+              selected: _visualCurrent,
+              onChanged: (s) => setState(() => _visualCurrent = s),
+              actionsBuilder: (total) => PageSelectAllActions(
+                totalPages: total,
+                onSelectAll: () => setState(() => _visualCurrent =
+                    Set.from(List.generate(total, (i) => i + 1))),
+                onClear: () => setState(() => _visualCurrent = {}),
+              ),
             ),
-          ),
-          if (_visualParts.isNotEmpty)
-            Wrap(
-              spacing: 6,
-              runSpacing: 4,
-              children: _visualParts.asMap().entries.map((e) {
-                return Chip(
-                  label: Text(t.partLabel(e.key + 1, e.value.join(","))),
-                  onDeleted: () =>
-                      setState(() => _visualParts.removeAt(e.key)),
-                );
-              }).toList(),
+            if (_visualParts.isNotEmpty)
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: _visualParts.asMap().entries.map((e) {
+                  return Chip(
+                    label: Text(t.partLabel(e.key + 1, e.value.join(","))),
+                    onDeleted: () =>
+                        setState(() => _visualParts.removeAt(e.key)),
+                  );
+                }).toList(),
+              ),
+            const SizedBox(height: 4),
+            TextButton.icon(
+              onPressed: _visualCurrent.isEmpty
+                  ? null
+                  : () => setState(() {
+                _visualParts.add(_visualCurrent.toList()..sort());
+                _visualCurrent = {};
+              }),
+              icon: const Icon(Icons.add),
+              label: Text(t.addPartButton),
             ),
-          const SizedBox(height: 4),
-          TextButton.icon(
-            onPressed: _visualCurrent.isEmpty
-                ? null
-                : () => setState(() {
-                      _visualParts.add(_visualCurrent.toList()..sort());
-                      _visualCurrent = {};
-                    }),
-            icon: const Icon(Icons.add),
-            label: Text(t.addPartButton),
-          ),
-        ],
+          ],
         const SizedBox(height: 8),
         ElevatedButton(
           onPressed: vm.splitFile != null && !vm.isSplitting && ranges.isNotEmpty
@@ -260,9 +319,9 @@ class _SplitSectionState extends State<_SplitSection> {
         if (vm.splitResult?.isSuccess == true &&
             vm.splitResult!.outputPaths != null)
           ...vm.splitResult!.outputPaths!.asMap().entries.map(
-              (e) => Text(
+                  (e) => Text(
                   t.partResultLabel(e.key + 1, e.value.split('/').last),
-                  style: const TextStyle(fontSize: 12))),
+                  style: Theme.of(context).textTheme.bodySmall)),
       ],
     );
   }
@@ -301,8 +360,9 @@ class _RemovePagesSectionState extends State<_RemovePagesSection> {
     final vm = context.watch<OrganizationViewModel>();
     final t = context.t;
     final pages = _computePages();
-    return _Section(
+    return TerminalSection(
       title: t.removeTitle,
+      initiallyExpanded: true,
       children: [
         FileTile(
           path: vm.removeFile,
@@ -383,8 +443,9 @@ class _ExtractPagesSectionState extends State<_ExtractPagesSection> {
     final vm = context.watch<OrganizationViewModel>();
     final t = context.t;
     final pages = _computePages();
-    return _Section(
+    return TerminalSection(
       title: t.extractTitle,
+      initiallyExpanded: true,
       children: [
         FileTile(
           path: vm.extractFile,
@@ -422,9 +483,9 @@ class _ExtractPagesSectionState extends State<_ExtractPagesSection> {
         const SizedBox(height: 8),
         ElevatedButton(
           onPressed:
-              vm.extractFile != null && !vm.isExtracting && pages.isNotEmpty
-                  ? () => vm.extractPages(pages)
-                  : null,
+          vm.extractFile != null && !vm.isExtracting && pages.isNotEmpty
+              ? () => vm.extractPages(pages)
+              : null,
           child: Text(t.extractButton),
         ),
         ResultCard(result: vm.extractResult, isLoading: vm.isExtracting),
@@ -466,8 +527,9 @@ class _ReorderSectionState extends State<_ReorderSection> {
     final vm = context.watch<OrganizationViewModel>();
     final t = context.t;
     final order = _computeOrder();
-    return _Section(
+    return TerminalSection(
       title: t.reorderTitle,
+      initiallyExpanded: true,
       children: [
         FileTile(
           path: vm.reorderFile,
@@ -496,19 +558,19 @@ class _ReorderSectionState extends State<_ReorderSection> {
         else if (vm.reorderFile == null)
           const _VisualHint()
         else ...[
-          Text(t.reorderVisualHint,
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-          PdfPageReorderList(
-            path: vm.reorderFile!,
-            onChanged: (o) => setState(() => _visualOrder = o),
-          ),
-        ],
+            Text(t.reorderVisualHint,
+                style: Theme.of(context).textTheme.bodySmall),
+            PdfPageReorderList(
+              path: vm.reorderFile!,
+              onChanged: (o) => setState(() => _visualOrder = o),
+            ),
+          ],
         const SizedBox(height: 8),
         ElevatedButton(
           onPressed:
-              vm.reorderFile != null && !vm.isReordering && order.isNotEmpty
-                  ? () => vm.reorderPages(order)
-                  : null,
+          vm.reorderFile != null && !vm.isReordering && order.isNotEmpty
+              ? () => vm.reorderPages(order)
+              : null,
           child: Text(t.reorderButton),
         ),
         ResultCard(result: vm.reorderResult, isLoading: vm.isReordering),
@@ -573,8 +635,9 @@ class _RotateSectionState extends State<_RotateSection> {
     final canRotate = vm.rotateFile != null &&
         !vm.isRotating &&
         (_mode == _InputMode.text || (computed != null && computed.isNotEmpty));
-    return _Section(
+    return TerminalSection(
       title: t.rotateTitle,
+      initiallyExpanded: true,
       children: [
         FileTile(
           path: vm.rotateFile,
@@ -601,7 +664,7 @@ class _RotateSectionState extends State<_RotateSection> {
             path: vm.rotateFile!,
             selected: _visualSelected,
             previewRotationOf: (p) =>
-                _visualSelected.contains(p) ? _degrees : 0,
+            _visualSelected.contains(p) ? _degrees : 0,
             onChanged: (s) => setState(() => _visualSelected = s),
             actionsBuilder: (total) => PageSelectAllActions(
               totalPages: total,
@@ -626,23 +689,6 @@ class _RotateSectionState extends State<_RotateSection> {
         ),
         ResultCard(result: vm.rotateResult, isLoading: vm.isRotating),
       ],
-    );
-  }
-}
-
-class _Section extends StatelessWidget {
-  final String title;
-  final List<Widget> children;
-
-  const _Section({required this.title, required this.children});
-
-  @override
-  Widget build(BuildContext context) {
-    return ExpansionTile(
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-      initiallyExpanded: false,
-      childrenPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      children: children,
     );
   }
 }

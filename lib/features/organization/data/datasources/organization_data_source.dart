@@ -10,6 +10,7 @@ abstract class OrganizationDataSource {
   Future<String> extractPages(String path, List<int> pageNumbers);
   Future<String> reorderPages(String path, List<int> newOrder);
   Future<String> rotatePages(String path, Map<int, int> pageRotations);
+  Future<String> renamePdf(String path, String newName);
 }
 
 class OrganizationDataSourceImpl implements OrganizationDataSource {
@@ -141,6 +142,14 @@ class OrganizationDataSourceImpl implements OrganizationDataSource {
     outputDoc.dispose();
     final outputPath = await FileUtils.getOutputPath(label);
     await File(outputPath).writeAsBytes(savedBytes);
+    return outputPath;
+  }
+
+  @override
+  Future<String> renamePdf(String path, String newName) async {
+    final bytes = await File(path).readAsBytes();
+    final outputPath = await FileUtils.getRenamedPath(newName);
+    await File(outputPath).writeAsBytes(bytes);
     return outputPath;
   }
 
