@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/feature_grid.dart';
 import '../../../../core/widgets/result_card.dart';
 import '../../../../core/widgets/terminal_widgets.dart';
@@ -16,28 +17,32 @@ class SecurityPage extends StatelessWidget {
     return TerminalScaffold(
       tag: 'secure',
       title: t.securityPageTitle,
+      accent: AppColors.accentSecurity,
       body: FeatureGrid(
         items: [
           FeatureGridItem(
             icon: Icons.lock_outline,
             title: t.protectTitle,
             subtitle: t.protectHint,
-            page: const _OperationPage(
-                tag: 'protect', child: _ProtectSection()),
+            color: AppColors.operationColor(0),
+            page: _OperationPage(
+                tag: 'protect', color: AppColors.operationColor(0), child: const _ProtectSection()),
           ),
           FeatureGridItem(
             icon: Icons.lock_open_outlined,
             title: t.unprotectTitle,
             subtitle: t.unprotectHint,
-            page: const _OperationPage(
-                tag: 'unprotect', child: _UnprotectSection()),
+            color: AppColors.operationColor(1),
+            page: _OperationPage(
+                tag: 'unprotect', color: AppColors.operationColor(1), child: const _UnprotectSection()),
           ),
           FeatureGridItem(
             icon: Icons.compress,
             title: t.compressTitle,
             subtitle: t.compressHint,
-            page: const _OperationPage(
-                tag: 'compress', child: _CompressSection()),
+            color: AppColors.operationColor(2),
+            page: _OperationPage(
+                tag: 'compress', color: AppColors.operationColor(2), child: const _CompressSection()),
           ),
         ],
       ),
@@ -49,14 +54,16 @@ class SecurityPage extends StatelessWidget {
 /// operation grid above.
 class _OperationPage extends StatelessWidget {
   final String tag;
+  final Color color;
   final Widget child;
-  const _OperationPage({required this.tag, required this.child});
+  const _OperationPage({required this.tag, required this.color, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return TerminalScaffold(
       tag: tag,
       title: context.t.securityPageTitle,
+      accent: color,
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: [child],

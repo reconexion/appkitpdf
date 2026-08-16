@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/feature_grid.dart';
 import '../../../../core/widgets/result_card.dart';
 import '../../../../core/widgets/terminal_widgets.dart';
@@ -16,49 +17,56 @@ class ConversionPage extends StatelessWidget {
     return TerminalScaffold(
       tag: 'convert',
       title: t.conversionPageTitle,
+      accent: AppColors.accentConversion,
       body: FeatureGrid(
         items: [
           FeatureGridItem(
             icon: Icons.image_outlined,
             title: t.pdfToImagesTitle,
             subtitle: t.pdfToImagesHint,
-            page: const _OperationPage(
-                tag: 'pdf2img', child: _PdfToImagesSection()),
+            color: AppColors.operationColor(0),
+            page: _OperationPage(
+                tag: 'pdf2img', color: AppColors.operationColor(0), child: const _PdfToImagesSection()),
           ),
           FeatureGridItem(
             icon: Icons.picture_as_pdf_outlined,
             title: t.imagesToPdfTitle,
             subtitle: t.imagesToPdfHint,
-            page: const _OperationPage(
-                tag: 'img2pdf', child: _ImagesToPdfSection()),
+            color: AppColors.operationColor(1),
+            page: _OperationPage(
+                tag: 'img2pdf', color: AppColors.operationColor(1), child: const _ImagesToPdfSection()),
           ),
           FeatureGridItem(
             icon: Icons.description_outlined,
             title: t.pdfToWordTitle,
             subtitle: t.pdfToWordHint,
-            page: const _OperationPage(
-                tag: 'pdf2word', child: _PdfToWordSection()),
+            color: AppColors.operationColor(2),
+            page: _OperationPage(
+                tag: 'pdf2word', color: AppColors.operationColor(2), child: const _PdfToWordSection()),
           ),
           FeatureGridItem(
             icon: Icons.table_chart_outlined,
             title: t.pdfToExcelTitle,
             subtitle: t.pdfToExcelHint,
-            page: const _OperationPage(
-                tag: 'pdf2excel', child: _PdfToExcelSection()),
+            color: AppColors.operationColor(3),
+            page: _OperationPage(
+                tag: 'pdf2excel', color: AppColors.operationColor(3), child: const _PdfToExcelSection()),
           ),
           FeatureGridItem(
             icon: Icons.slideshow_outlined,
             title: t.pdfToPptTitle,
             subtitle: t.pdfToPptHint,
-            page: const _OperationPage(
-                tag: 'pdf2ppt', child: _PdfToPptSection()),
+            color: AppColors.operationColor(4),
+            page: _OperationPage(
+                tag: 'pdf2ppt', color: AppColors.operationColor(4), child: const _PdfToPptSection()),
           ),
           FeatureGridItem(
             icon: Icons.code,
             title: t.htmlToPdfTitle,
             subtitle: t.htmlToPdfCardHint,
-            page: const _OperationPage(
-                tag: 'html2pdf', child: _HtmlToPdfSection()),
+            color: AppColors.operationColor(5),
+            page: _OperationPage(
+                tag: 'html2pdf', color: AppColors.operationColor(5), child: const _HtmlToPdfSection()),
           ),
         ],
       ),
@@ -70,14 +78,16 @@ class ConversionPage extends StatelessWidget {
 /// operation grid above.
 class _OperationPage extends StatelessWidget {
   final String tag;
+  final Color color;
   final Widget child;
-  const _OperationPage({required this.tag, required this.child});
+  const _OperationPage({required this.tag, required this.color, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return TerminalScaffold(
       tag: tag,
       title: context.t.conversionPageTitle,
+      accent: color,
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: [child],

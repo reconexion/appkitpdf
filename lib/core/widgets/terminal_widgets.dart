@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'aero_background.dart';
+import 'animations.dart';
+import 'glass_panel.dart';
 
 /// Scaffold estándar para las páginas de features: mismo header
 /// "terminal" que la home, con botón de volver y título arriba.
@@ -10,43 +13,80 @@ class TerminalScaffold extends StatelessWidget {
   final Widget body;
   final List<Widget>? actions;
 
+  /// Color del módulo actual (Organización, Conversión, etc). El negro +
+  /// rojo por defecto sigue siendo la identidad de la app en las páginas
+  /// que no pasan uno explícito.
+  final Color accent;
+
   const TerminalScaffold({
     super.key,
     required this.title,
     required this.tag,
     required this.body,
     this.actions,
+    this.accent = AppColors.red,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              padding: const EdgeInsets.fromLTRB(4, 8, 16, 12),
-              decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppColors.red, width: 1)),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+    return Theme(
+      data: AppTheme.accentTheme(context, accent),
+      child: AccentScope(
+        color: accent,
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: AeroBackground(
+            accent: accent,
+            child: SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.arrow_back, size: 20, color: AppColors.red),
+                  FadeSlideIn(
+                    index: 0,
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(4, 8, 16, 14),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.55),
+                            Color.lerp(Colors.black, accent, 0.18)!
+                                .withValues(alpha: 0.55),
+                          ],
+                        ),
+                        border: Border(bottom: BorderSide(color: accent, width: 1)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: accent.withValues(alpha: 0.3),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            icon: Icon(Icons.arrow_back, size: 20, color: accent),
+                          ),
+                          Expanded(
+                            child: Text(title,
+                                style: Theme.of(context).textTheme.headlineSmall),
+                          ),
+                          if (actions != null) ...actions!,
+                        ],
+                      ),
+                    ),
                   ),
                   Expanded(
-                    child: Text(title,
-                        style: Theme.of(context).textTheme.headlineSmall),
+                    child: FadeSlideIn(index: 1, child: body),
                   ),
-                  if (actions != null) ...actions!,
                 ],
               ),
             ),
-            Expanded(child: body),
-          ],
+          ),
         ),
       ),
     );
@@ -77,51 +117,52 @@ class _TerminalSectionState extends State<TerminalSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: const BoxDecoration(
-        color: Colors.black,
-        border: Border.fromBorderSide(BorderSide(color: AppColors.red, width: 1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          InkWell(
-            onTap: () => setState(() => _open = !_open),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      widget.title.toUpperCase(),
-                      style: Theme.of(context).textTheme.labelLarge,
+    final accent = AccentScope.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: GlassPanel(
+        accent: accent,
+        radius: 16,
+        glow: 0.2,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            InkWell(
+              onTap: () => setState(() => _open = !_open),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.title.toUpperCase(),
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
                     ),
-                  ),
-                  AnimatedRotation(
-                    turns: _open ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 180),
-                    child: const Icon(Icons.expand_more,
-                        size: 18, color: AppColors.red),
-                  ),
-                ],
+                    AnimatedRotation(
+                      turns: _open ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 180),
+                      child: Icon(Icons.expand_more, size: 18, color: accent),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          AnimatedCrossFade(
-            duration: const Duration(milliseconds: 180),
-            crossFadeState:
-            _open ? CrossFadeState.showFirst : CrossFadeState.showSecond,
-            firstChild: Padding(
-              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: widget.children,
+            AnimatedCrossFade(
+              duration: const Duration(milliseconds: 180),
+              crossFadeState:
+              _open ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+              firstChild: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: widget.children,
+                ),
               ),
+              secondChild: const SizedBox(width: double.infinity),
             ),
-            secondChild: const SizedBox(width: double.infinity),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -143,7 +184,9 @@ class TerminalStatRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label.toUpperCase(), style: Theme.of(context).textTheme.bodySmall),
-          Text(value, style: Theme.of(context).textTheme.bodyMedium),
+          Text(value,
+              style: AppTextStyles.digit(
+                  fontSize: 16, color: AccentScope.of(context))),
         ],
       ),
     );

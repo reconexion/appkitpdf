@@ -191,27 +191,25 @@ class EnStrings implements AppStrings {
   @override
   String get organizationTitle => 'Organization';
   @override
-  String get organizationSubtitle =>
-      'Merge · Split · Remove · Extract · Reorder · Rotate';
+  String get organizationSubtitle => 'Merge, split & more';
   @override
   String get conversionTitle => 'Conversion';
   @override
-  String get conversionSubtitle =>
-      'PDF↔Word · PDF↔Excel · PDF↔PPT · PDF↔Images · HTML→PDF';
+  String get conversionSubtitle => 'Convert file formats';
   @override
   String get editingTitle => 'Editing';
   @override
-  String get editingSubtitle => 'Add page numbers · Text overlay / Watermark';
+  String get editingSubtitle => 'Numbers & watermarks';
   @override
   String get securityTitle => 'Security';
   @override
-  String get securitySubtitle => 'Password protect · Unprotect · Compress';
+  String get securitySubtitle => 'Protect & compress';
   @override
   String get extrasTitle => 'Extras';
   @override
-  String get extrasSubtitle => 'OCR · Compare PDFs · Repair corrupted PDF';
+  String get extrasSubtitle => 'OCR, compare & repair';
   @override
-  String get renameSubtitle => 'Give your PDF a new name';
+  String get renameSubtitle => 'Rename files';
 
   @override
   String get processing => 'Processing...';
@@ -308,17 +306,17 @@ class EnStrings implements AppStrings {
   String get renameButton => 'Rename';
 
   @override
-  String get mergeHint => 'Combine multiple PDFs into one';
+  String get mergeHint => 'Combine PDFs';
   @override
-  String get splitHint => 'Break a PDF into separate files';
+  String get splitHint => 'Split into parts';
   @override
-  String get removeHint => 'Delete specific pages';
+  String get removeHint => 'Delete pages';
   @override
-  String get extractHint => 'Pull out selected pages';
+  String get extractHint => 'Extract pages';
   @override
-  String get reorderHint => 'Change the page order';
+  String get reorderHint => 'Reorder pages';
   @override
-  String get rotateHint => 'Rotate pages 90/180/270°';
+  String get rotateHint => 'Rotate pages';
 
   @override
   String get conversionPageTitle => 'Conversion';
@@ -360,17 +358,17 @@ class EnStrings implements AppStrings {
   String get convertToPdfButton => 'Convert to PDF';
 
   @override
-  String get pdfToImagesHint => 'Export pages as images';
+  String get pdfToImagesHint => 'PDF to images';
   @override
-  String get imagesToPdfHint => 'Build a PDF from images';
+  String get imagesToPdfHint => 'Images to PDF';
   @override
-  String get pdfToWordHint => 'Extract text into Word';
+  String get pdfToWordHint => 'PDF to Word';
   @override
-  String get pdfToExcelHint => 'Extract text into Excel';
+  String get pdfToExcelHint => 'PDF to Excel';
   @override
-  String get pdfToPptHint => 'Turn text into slides';
+  String get pdfToPptHint => 'PDF to slides';
   @override
-  String get htmlToPdfCardHint => 'Turn HTML into a PDF';
+  String get htmlToPdfCardHint => 'HTML to PDF';
 
   @override
   String get editingPageTitle => 'Editing';
@@ -400,9 +398,9 @@ class EnStrings implements AppStrings {
   String get applyOverlayButton => 'Apply Overlay';
 
   @override
-  String get pageNumbersHint => 'Stamp page numbers';
+  String get pageNumbersHint => 'Number pages';
   @override
-  String get overlayHint => 'Add text or watermark';
+  String get overlayHint => 'Add watermark';
 
   @override
   String get securityPageTitle => 'Security';
@@ -426,11 +424,11 @@ class EnStrings implements AppStrings {
   String get compressButton => 'Compress';
 
   @override
-  String get protectHint => 'Lock with a password';
+  String get protectHint => 'Add password';
   @override
-  String get unprotectHint => 'Remove the password';
+  String get unprotectHint => 'Remove password';
   @override
-  String get compressHint => 'Shrink the file size';
+  String get compressHint => 'Reduce size';
 
   @override
   String get extrasPageTitle => 'Extras';
@@ -460,11 +458,11 @@ class EnStrings implements AppStrings {
   String get repairButton => 'Repair PDF';
 
   @override
-  String get ocrHint => 'Make scans searchable';
+  String get ocrHint => 'Scan to text';
   @override
-  String get compareHint => 'Diff two PDFs';
+  String get compareHint => 'Compare PDFs';
   @override
-  String get repairHint => 'Fix a corrupted PDF';
+  String get repairHint => 'Repair PDF';
 }
 
 class EsStrings implements AppStrings {
@@ -476,28 +474,25 @@ class EsStrings implements AppStrings {
   @override
   String get organizationTitle => 'Organización';
   @override
-  String get organizationSubtitle =>
-      'Combinar · Dividir · Quitar · Extraer · Reordenar · Rotar';
+  String get organizationSubtitle => 'Combina, divide y más';
   @override
   String get conversionTitle => 'Conversión';
   @override
-  String get conversionSubtitle =>
-      'PDF↔Word · PDF↔Excel · PDF↔PPT · PDF↔Imágenes · HTML→PDF';
+  String get conversionSubtitle => 'Convierte formatos';
   @override
   String get editingTitle => 'Edición';
   @override
-  String get editingSubtitle =>
-      'Agregar números de página · Texto superpuesto / Marca de agua';
+  String get editingSubtitle => 'Números y marcas de agua';
   @override
   String get securityTitle => 'Seguridad';
   @override
-  String get securitySubtitle => 'Proteger con contraseña · Desproteger · Comprimir';
+  String get securitySubtitle => 'Protege y comprime';
   @override
   String get extrasTitle => 'Extras';
   @override
-  String get extrasSubtitle => 'OCR · Comparar PDFs · Reparar PDF dañado';
+  String get extrasSubtitle => 'OCR, compara y repara';
   @override
-  String get renameSubtitle => 'Dale un nuevo nombre a tu PDF';
+  String get renameSubtitle => 'Renombra archivos';
 
   @override
   String get processing => 'Procesando...';
@@ -598,17 +593,17 @@ class EsStrings implements AppStrings {
   String get renameButton => 'Renombrar';
 
   @override
-  String get mergeHint => 'Combina varios PDFs en uno';
+  String get mergeHint => 'Combina PDFs';
   @override
-  String get splitHint => 'Divide un PDF en varios archivos';
+  String get splitHint => 'Divide en partes';
   @override
-  String get removeHint => 'Elimina páginas específicas';
+  String get removeHint => 'Quita páginas';
   @override
-  String get extractHint => 'Extrae páginas seleccionadas';
+  String get extractHint => 'Extrae páginas';
   @override
-  String get reorderHint => 'Cambia el orden de las páginas';
+  String get reorderHint => 'Reordena páginas';
   @override
-  String get rotateHint => 'Rota páginas 90/180/270°';
+  String get rotateHint => 'Rota páginas';
 
   @override
   String get conversionPageTitle => 'Conversión';
@@ -650,17 +645,17 @@ class EsStrings implements AppStrings {
   String get convertToPdfButton => 'Convertir a PDF';
 
   @override
-  String get pdfToImagesHint => 'Exporta páginas como imágenes';
+  String get pdfToImagesHint => 'PDF a imágenes';
   @override
-  String get imagesToPdfHint => 'Crea un PDF con imágenes';
+  String get imagesToPdfHint => 'Imágenes a PDF';
   @override
-  String get pdfToWordHint => 'Extrae el texto a Word';
+  String get pdfToWordHint => 'PDF a Word';
   @override
-  String get pdfToExcelHint => 'Extrae el texto a Excel';
+  String get pdfToExcelHint => 'PDF a Excel';
   @override
-  String get pdfToPptHint => 'Convierte texto en diapositivas';
+  String get pdfToPptHint => 'PDF a slides';
   @override
-  String get htmlToPdfCardHint => 'Convierte HTML en PDF';
+  String get htmlToPdfCardHint => 'HTML a PDF';
 
   @override
   String get editingPageTitle => 'Edición';
@@ -690,9 +685,9 @@ class EsStrings implements AppStrings {
   String get applyOverlayButton => 'Aplicar Superposición';
 
   @override
-  String get pageNumbersHint => 'Agrega números de página';
+  String get pageNumbersHint => 'Numera páginas';
   @override
-  String get overlayHint => 'Agrega texto o marca de agua';
+  String get overlayHint => 'Marca de agua';
 
   @override
   String get securityPageTitle => 'Seguridad';
@@ -716,11 +711,11 @@ class EsStrings implements AppStrings {
   String get compressButton => 'Comprimir';
 
   @override
-  String get protectHint => 'Bloquea con contraseña';
+  String get protectHint => 'Pon contraseña';
   @override
-  String get unprotectHint => 'Quita la contraseña';
+  String get unprotectHint => 'Quita contraseña';
   @override
-  String get compressHint => 'Reduce el tamaño';
+  String get compressHint => 'Reduce tamaño';
 
   @override
   String get extrasPageTitle => 'Extras';
@@ -751,9 +746,9 @@ class EsStrings implements AppStrings {
   String get repairButton => 'Reparar PDF';
 
   @override
-  String get ocrHint => 'Hace legibles los escaneos';
+  String get ocrHint => 'Escaneo a texto';
   @override
-  String get compareHint => 'Compara dos PDFs';
+  String get compareHint => 'Compara PDFs';
   @override
-  String get repairHint => 'Repara un PDF dañado';
+  String get repairHint => 'Repara PDF';
 }

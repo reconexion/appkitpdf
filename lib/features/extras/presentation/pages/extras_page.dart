@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/feature_grid.dart';
 import '../../../../core/widgets/result_card.dart';
 import '../../../../core/widgets/terminal_widgets.dart';
@@ -16,27 +17,32 @@ class ExtrasPage extends StatelessWidget {
     return TerminalScaffold(
       tag: 'extras',
       title: t.extrasPageTitle,
+      accent: AppColors.accentExtras,
       body: FeatureGrid(
         items: [
           FeatureGridItem(
             icon: Icons.document_scanner_outlined,
             title: t.ocrTitle,
             subtitle: t.ocrHint,
-            page: const _OperationPage(tag: 'ocr', child: _OcrSection()),
+            color: AppColors.operationColor(0),
+            page: _OperationPage(
+                tag: 'ocr', color: AppColors.operationColor(0), child: const _OcrSection()),
           ),
           FeatureGridItem(
             icon: Icons.compare_arrows,
             title: t.compareTitle,
             subtitle: t.compareHint,
-            page: const _OperationPage(
-                tag: 'compare', child: _CompareSection()),
+            color: AppColors.operationColor(1),
+            page: _OperationPage(
+                tag: 'compare', color: AppColors.operationColor(1), child: const _CompareSection()),
           ),
           FeatureGridItem(
             icon: Icons.build_outlined,
             title: t.repairTitle,
             subtitle: t.repairHint,
-            page: const _OperationPage(
-                tag: 'repair', child: _RepairSection()),
+            color: AppColors.operationColor(2),
+            page: _OperationPage(
+                tag: 'repair', color: AppColors.operationColor(2), child: const _RepairSection()),
           ),
         ],
       ),
@@ -48,14 +54,16 @@ class ExtrasPage extends StatelessWidget {
 /// operation grid above.
 class _OperationPage extends StatelessWidget {
   final String tag;
+  final Color color;
   final Widget child;
-  const _OperationPage({required this.tag, required this.child});
+  const _OperationPage({required this.tag, required this.color, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return TerminalScaffold(
       tag: tag,
       title: context.t.extrasPageTitle,
+      accent: color,
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: [child],

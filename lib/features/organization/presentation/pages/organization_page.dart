@@ -21,49 +21,56 @@ class OrganizationPage extends StatelessWidget {
     return TerminalScaffold(
       tag: 'organize',
       title: t.organizationPageTitle,
+      accent: AppColors.accentOrganization,
       body: FeatureGrid(
         items: [
           FeatureGridItem(
             icon: Icons.merge_type,
             title: t.mergeTitle,
             subtitle: t.mergeHint,
-            page: const _OperationPage(
-                tag: 'merge', child: _MergeSection()),
+            color: AppColors.operationColor(0),
+            page: _OperationPage(
+                tag: 'merge', color: AppColors.operationColor(0), child: const _MergeSection()),
           ),
           FeatureGridItem(
             icon: Icons.call_split,
             title: t.splitTitle,
             subtitle: t.splitHint,
-            page: const _OperationPage(
-                tag: 'split', child: _SplitSection()),
+            color: AppColors.operationColor(1),
+            page: _OperationPage(
+                tag: 'split', color: AppColors.operationColor(1), child: const _SplitSection()),
           ),
           FeatureGridItem(
             icon: Icons.delete_outline,
             title: t.removeTitle,
             subtitle: t.removeHint,
-            page: const _OperationPage(
-                tag: 'remove', child: _RemovePagesSection()),
+            color: AppColors.operationColor(2),
+            page: _OperationPage(
+                tag: 'remove', color: AppColors.operationColor(2), child: const _RemovePagesSection()),
           ),
           FeatureGridItem(
             icon: Icons.content_cut,
             title: t.extractTitle,
             subtitle: t.extractHint,
-            page: const _OperationPage(
-                tag: 'extract', child: _ExtractPagesSection()),
+            color: AppColors.operationColor(3),
+            page: _OperationPage(
+                tag: 'extract', color: AppColors.operationColor(3), child: const _ExtractPagesSection()),
           ),
           FeatureGridItem(
             icon: Icons.reorder,
             title: t.reorderTitle,
             subtitle: t.reorderHint,
-            page: const _OperationPage(
-                tag: 'reorder', child: _ReorderSection()),
+            color: AppColors.operationColor(4),
+            page: _OperationPage(
+                tag: 'reorder', color: AppColors.operationColor(4), child: const _ReorderSection()),
           ),
           FeatureGridItem(
             icon: Icons.rotate_right,
             title: t.rotateTitle,
             subtitle: t.rotateHint,
-            page: const _OperationPage(
-                tag: 'rotate', child: _RotateSection()),
+            color: AppColors.operationColor(5),
+            page: _OperationPage(
+                tag: 'rotate', color: AppColors.operationColor(5), child: const _RotateSection()),
           ),
         ],
       ),
@@ -75,14 +82,16 @@ class OrganizationPage extends StatelessWidget {
 /// operation grid above.
 class _OperationPage extends StatelessWidget {
   final String tag;
+  final Color color;
   final Widget child;
-  const _OperationPage({required this.tag, required this.child});
+  const _OperationPage({required this.tag, required this.color, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return TerminalScaffold(
       tag: tag,
       title: context.t.organizationPageTitle,
+      accent: color,
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: [child],
@@ -136,7 +145,8 @@ class _VisualHint extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         children: [
-          const Icon(Icons.info_outline, size: 16, color: AppColors.redSoft),
+          Icon(Icons.info_outline,
+              size: 16, color: Color.lerp(AccentScope.of(context), Colors.white, 0.3)),
           const SizedBox(width: 6),
           Expanded(
             child: Text(context.t.visualHint,
@@ -675,10 +685,13 @@ class _RotateSectionState extends State<_RotateSection> {
           ),
         DropdownButton<int>(
           value: _degrees,
-          items: const [
-            DropdownMenuItem(value: 90, child: Text('90°')),
-            DropdownMenuItem(value: 180, child: Text('180°')),
-            DropdownMenuItem(value: 270, child: Text('270°')),
+          items: [
+            DropdownMenuItem(
+                value: 90, child: Text('90°', style: AppTextStyles.digit(fontSize: 18, color: AccentScope.of(context)))),
+            DropdownMenuItem(
+                value: 180, child: Text('180°', style: AppTextStyles.digit(fontSize: 18, color: AccentScope.of(context)))),
+            DropdownMenuItem(
+                value: 270, child: Text('270°', style: AppTextStyles.digit(fontSize: 18, color: AccentScope.of(context)))),
           ],
           onChanged: (v) => setState(() => _degrees = v!),
         ),

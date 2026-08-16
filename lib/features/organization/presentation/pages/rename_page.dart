@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/result_card.dart';
 import '../../../../core/widgets/terminal_widgets.dart';
 import '../viewmodels/organization_view_model.dart';
@@ -29,6 +30,7 @@ class _RenamePageState extends State<RenamePage> {
     return TerminalScaffold(
       tag: 'rename',
       title: t.renameTitle,
+      accent: AppColors.accentRename,
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: [

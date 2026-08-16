@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import '../l10n/app_strings.dart';
 import '../result/result.dart';
 import '../theme/app_theme.dart';
+import 'glass_panel.dart';
 
 class ResultCard extends StatelessWidget {
   final OperationResult? result;
@@ -37,7 +38,10 @@ class ResultCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const LinearProgressIndicator(minHeight: 2),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: const LinearProgressIndicator(minHeight: 4),
+            ),
             const SizedBox(height: 10),
             Text(
               t.processing.toUpperCase(),
@@ -51,45 +55,45 @@ class ResultCard extends StatelessWidget {
     if (result == null) return const SizedBox.shrink(key: ValueKey('empty'));
 
     if (!result!.isSuccess) {
-      return Container(
+      return Padding(
         key: const ValueKey('error'),
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.all(14),
-        decoration: const BoxDecoration(
-          color: Colors.black,
-          border: Border.fromBorderSide(BorderSide(color: AppColors.red)),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, color: AppColors.red, size: 18),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                t.errorMessage(result!.error ?? ''),
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: AppColors.red, height: 1.4),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: GlassPanel(
+          accent: AppColors.red,
+          radius: 14,
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: AppColors.red, size: 18),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  t.errorMessage(result!.error ?? ''),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: AppColors.red, height: 1.4),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
 
     final paths = result!.outputPaths ??
         (result!.outputPath != null ? [result!.outputPath!] : []);
+    final accent = AccentScope.of(context);
 
-    return Container(
+    return Padding(
       key: const ValueKey('success'),
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: Colors.black,
-        border: Border.fromBorderSide(BorderSide(color: AppColors.red)),
-      ),
-      child: Column(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: GlassPanel(
+        accent: accent,
+        radius: 16,
+        padding: const EdgeInsets.all(16),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Row(
@@ -102,8 +106,7 @@ class ResultCard extends StatelessWidget {
                 curve: Curves.elasticOut,
                 builder: (context, v, child) =>
                     Transform.scale(scale: v, child: child),
-                child:
-                const Icon(Icons.check_circle, color: AppColors.red, size: 18),
+                child: Icon(Icons.check_circle, color: accent, size: 18),
               ),
               const SizedBox(width: 8),
               Text(t.done.toUpperCase(), style: Theme.of(context).textTheme.labelLarge),
@@ -139,7 +142,8 @@ class ResultCard extends StatelessWidget {
                 ),
             ],
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -155,17 +159,25 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AccentScope.of(context);
     return InkWell(
+      borderRadius: BorderRadius.circular(20),
       onTap: onPressed,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: const BoxDecoration(
-          border: Border.fromBorderSide(BorderSide(color: AppColors.red)),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color.lerp(Colors.black, accent, 0.22)!, Colors.black],
+          ),
+          border: Border.fromBorderSide(BorderSide(color: accent)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: AppColors.red),
+            Icon(icon, size: 14, color: accent),
             const SizedBox(width: 6),
             Text(label.toUpperCase(), style: Theme.of(context).textTheme.bodySmall),
           ],
@@ -193,14 +205,21 @@ class FileTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.t;
     final selected = path != null;
+    final accent = AccentScope.of(context);
+    final accentSoft = Color.lerp(accent, Colors.white, 0.3)!;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeOut,
       margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: const BoxDecoration(
-        color: Colors.black,
-        border: Border.fromBorderSide(BorderSide(color: AppColors.red)),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color.lerp(Colors.black, accent, 0.16)!, Colors.black],
+        ),
+        border: Border.fromBorderSide(BorderSide(color: accent)),
       ),
       child: ListTile(
         dense: true,
@@ -211,13 +230,13 @@ class FileTile extends StatelessWidget {
             selected ? Icons.picture_as_pdf_outlined : Icons.upload_file,
             key: ValueKey(selected),
             size: 18,
-            color: AppColors.red,
+            color: accent,
           ),
         ),
         title: Text(
           path?.split('/').last ?? label ?? t.noFileSelected,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: selected ? AppColors.red : AppColors.redSoft,
+            color: selected ? accent : accentSoft,
           ),
         ),
         trailing: Row(
@@ -230,12 +249,12 @@ class FileTile extends StatelessWidget {
                 style: Theme.of(context)
                     .textTheme
                     .bodySmall
-                    ?.copyWith(color: AppColors.red, fontWeight: FontWeight.w700),
+                    ?.copyWith(color: accent, fontWeight: FontWeight.w700),
               ),
             ),
             if (selected && onClear != null)
               IconButton(
-                icon: const Icon(Icons.close, size: 16, color: AppColors.red),
+                icon: Icon(Icons.close, size: 16, color: accent),
                 onPressed: onClear,
               ),
           ],

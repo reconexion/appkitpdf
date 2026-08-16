@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'animations.dart';
+import 'glass_panel.dart';
 
 /// One entry in a [FeatureGrid]: icon + title (+ optional subtitle) that
 /// navigates to [page] when tapped.
@@ -10,11 +11,17 @@ class FeatureGridItem {
   final String? subtitle;
   final Widget page;
 
+  /// Color de esta tarjeta. Si es null, hereda el [AccentScope] ambiente
+  /// (así las sub-tarjetas dentro de un módulo no necesitan repetirlo).
+  /// La Home sí lo fija explícito por ítem, uno distinto por función.
+  final Color? color;
+
   const FeatureGridItem({
     required this.icon,
     required this.title,
     this.subtitle,
     required this.page,
+    this.color,
   });
 }
 
@@ -50,9 +57,10 @@ class FeatureGrid extends StatelessWidget {
   }
 }
 
-/// Celda cuadrada tipo botón de panel de control: icono grande arriba,
-/// título abajo. Al presionar, el borde brilla más fuerte por un instante
-/// (glow animado) para dar feedback claro de que es tocable.
+/// Celda tipo panel de control: título arriba a la izquierda, ícono como
+/// acento en la esquina inferior izquierda (en vez de centrado). Al
+/// presionar, el borde brilla más fuerte por un instante (glow animado)
+/// para dar feedback claro de que es tocable.
 class FeatureTile extends StatefulWidget {
   final FeatureGridItem item;
   const FeatureTile({super.key, required this.item});
@@ -81,6 +89,7 @@ class _FeatureTileState extends State<FeatureTile>
   @override
   Widget build(BuildContext context) {
     final f = widget.item;
+    final accent = f.color ?? AccentScope.of(context);
     return AnimatedBuilder(
       animation: _pressController,
       builder: (context, child) {
@@ -94,45 +103,56 @@ class _FeatureTileState extends State<FeatureTile>
         onTapCancel: _onTapEnd,
         onTapUp: (_) => _onTapEnd(),
         child: FeatureBracketPanel(
+          color: accent,
           glow: _pressController,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            padding: const EdgeInsets.fromLTRB(14, 18, 14, 16),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.red, width: 1),
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color.lerp(Colors.black, accent, 0.3)!,
+                          Colors.black,
+                        ],
+                      ),
+                      border: Border.all(color: accent, width: 1),
+                    ),
+                    child: Icon(f.icon, color: accent, size: 22),
                   ),
-                  child: Icon(f.icon, color: AppColors.red, size: 26),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 Text(
                   f.title,
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.left,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context)
                       .textTheme
                       .titleMedium
-                      ?.copyWith(height: 1.25),
+                      ?.copyWith(height: 1.15, fontWeight: FontWeight.w900),
                 ),
                 if (f.subtitle != null) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Text(
                     f.subtitle!,
-                    textAlign: TextAlign.center,
+                    textAlign: TextAlign.left,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context)
                         .textTheme
                         .bodySmall
-                        ?.copyWith(height: 1.35),
+                        ?.copyWith(height: 1.3),
                   ),
                 ],
               ],
@@ -144,67 +164,38 @@ class _FeatureTileState extends State<FeatureTile>
   }
 }
 
-/// Panel con borde rojo y esquinas reforzadas. Si se le pasa [glow],
-/// el borde se anima a un rojo más brillante cuando el usuario presiona
-/// (feedback táctil claro sin usar sombras ni blur — barato en cualquier
-/// gama de celular, ya que solo interpola un color).
+/// Panel de cristal ("Frutiger Aero"): esquinas redondeadas, degradado y
+/// resplandor del color del módulo. Si se le pasa [glow], el brillo del
+/// borde se intensifica un instante cuando el usuario presiona (feedback
+/// táctil, solo interpola color, barato en cualquier gama de celular).
 class FeatureBracketPanel extends StatelessWidget {
   final Widget child;
+  final Color color;
   final Animation<double>? glow;
-  const FeatureBracketPanel({super.key, required this.child, this.glow});
+  const FeatureBracketPanel({
+    super.key,
+    required this.child,
+    this.color = AppColors.red,
+    this.glow,
+  });
 
   @override
   Widget build(BuildContext context) {
     if (glow == null) {
-      return _panel(AppColors.red, child);
+      return GlassPanel(accent: color, radius: 18, child: child);
     }
+    final soft = Color.lerp(color, Colors.white, 0.35)!;
     return AnimatedBuilder(
       animation: glow!,
       builder: (context, _) {
-        final color =
-        Color.lerp(AppColors.red, AppColors.redSoft, glow!.value)!;
-        return _panel(color, child);
+        final liveColor = Color.lerp(color, soft, glow!.value)!;
+        return GlassPanel(
+          accent: liveColor,
+          radius: 18,
+          glow: 0.25 + glow!.value * 0.3,
+          child: child,
+        );
       },
     );
   }
-
-  Widget _panel(Color borderColor, Widget child) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.black,
-        border: Border.fromBorderSide(BorderSide(color: borderColor, width: 1)),
-      ),
-      child: CustomPaint(
-        painter: _CornerPainter(color: borderColor),
-        child: child,
-      ),
-    );
-  }
-}
-
-class _CornerPainter extends CustomPainter {
-  final Color color;
-  const _CornerPainter({this.color = AppColors.red});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 2;
-    const len = 14.0;
-
-    // Esquina superior izquierda
-    canvas.drawLine(const Offset(-1, 0), const Offset(len, 0), paint);
-    canvas.drawLine(const Offset(0, -1), const Offset(0, len), paint);
-
-    // Esquina inferior derecha
-    canvas.drawLine(
-        Offset(size.width - len, size.height), Offset(size.width + 1, size.height), paint);
-    canvas.drawLine(
-        Offset(size.width, size.height - len), Offset(size.width, size.height + 1), paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _CornerPainter oldDelegate) =>
-      oldDelegate.color != color;
 }

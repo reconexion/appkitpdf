@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/feature_grid.dart';
 import '../../../../core/widgets/result_card.dart';
 import '../../../../core/widgets/terminal_widgets.dart';
@@ -17,21 +18,24 @@ class EditingPage extends StatelessWidget {
     return TerminalScaffold(
       tag: 'edit',
       title: t.editingPageTitle,
+      accent: AppColors.accentEditing,
       body: FeatureGrid(
         items: [
           FeatureGridItem(
             icon: Icons.format_list_numbered,
             title: t.pageNumbersTitle,
             subtitle: t.pageNumbersHint,
-            page: const _OperationPage(
-                tag: 'pagenum', child: _PageNumbersSection()),
+            color: AppColors.operationColor(0),
+            page: _OperationPage(
+                tag: 'pagenum', color: AppColors.operationColor(0), child: const _PageNumbersSection()),
           ),
           FeatureGridItem(
             icon: Icons.text_fields,
             title: t.overlayTitle,
             subtitle: t.overlayHint,
-            page: const _OperationPage(
-                tag: 'overlay', child: _TextOverlaySection()),
+            color: AppColors.operationColor(1),
+            page: _OperationPage(
+                tag: 'overlay', color: AppColors.operationColor(1), child: const _TextOverlaySection()),
           ),
         ],
       ),
@@ -43,14 +47,16 @@ class EditingPage extends StatelessWidget {
 /// operation grid above.
 class _OperationPage extends StatelessWidget {
   final String tag;
+  final Color color;
   final Widget child;
-  const _OperationPage({required this.tag, required this.child});
+  const _OperationPage({required this.tag, required this.color, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return TerminalScaffold(
       tag: tag,
       title: context.t.editingPageTitle,
+      accent: color,
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: [child],
@@ -172,7 +178,7 @@ class _TextOverlaySectionState extends State<_TextOverlaySection> {
               ),
             ),
             Text(_fontSize.round().toString(),
-                style: Theme.of(context).textTheme.bodyMedium),
+                style: AppTextStyles.digit(fontSize: 18, color: AccentScope.of(context))),
           ],
         ),
         Row(
@@ -189,7 +195,7 @@ class _TextOverlaySectionState extends State<_TextOverlaySection> {
               ),
             ),
             Text(_opacity.toStringAsFixed(1),
-                style: Theme.of(context).textTheme.bodyMedium),
+                style: AppTextStyles.digit(fontSize: 18, color: AccentScope.of(context))),
           ],
         ),
         SwitchListTile(
