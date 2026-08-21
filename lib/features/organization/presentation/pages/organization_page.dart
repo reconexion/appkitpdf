@@ -3,192 +3,89 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/file_utils.dart';
-import '../../../../core/widgets/feature_grid.dart';
+import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/pdf_page_picker.dart';
 import '../../../../core/widgets/result_card.dart';
-import '../../../../core/widgets/terminal_widgets.dart';
+import '../../../../core/widgets/tool_list.dart';
 import '../viewmodels/organization_view_model.dart';
+import 'rename_page.dart';
 
-enum _InputMode { text, visual }
+/// Herramientas de Organización, listadas en Home bajo su propio acento
+/// de categoría (azul petróleo) — nunca como fondo, solo contorno/texto.
+List<ToolItem> organizationTools(BuildContext context) {
+  final t = context.t;
+  return [
+    ToolItem(icon: Icons.merge_type, title: t.mergeTitle, page: const _MergePage()),
+    ToolItem(icon: Icons.call_split, title: t.splitTitle, page: const _SplitPage()),
+    ToolItem(icon: Icons.delete_outline, title: t.removeTitle, page: const _RemovePage()),
+    ToolItem(icon: Icons.content_cut, title: t.extractTitle, page: const _ExtractPage()),
+    ToolItem(icon: Icons.swap_vert, title: t.reorderTitle, page: const _ReorderPage()),
+    ToolItem(icon: Icons.rotate_right, title: t.rotateTitle, page: const _RotatePage()),
+    ToolItem(icon: Icons.drive_file_rename_outline, title: t.renameTitle, page: const RenamePage()),
+  ];
+}
 
-class OrganizationPage extends StatelessWidget {
-  const OrganizationPage({super.key});
+Future<String?> _pickPdf() async {
+  final r = await FilePicker.platform
+      .pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
+  return r?.files.single.path;
+}
+
+/// Selector de degrees (90°/180°/270°) como chips tocables — control
+/// visual y directo, nunca un campo de texto. Rojo = seleccionado.
+class _DegreesSelector extends StatelessWidget {
+  final int value;
+  final ValueChanged<int> onChanged;
+  const _DegreesSelector({required this.value, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    final t = context.t;
-    return TerminalScaffold(
-      tag: 'organize',
-      title: t.organizationPageTitle,
-      accent: AppColors.accentOrganization,
-      body: FeatureGrid(
-        items: [
-          FeatureGridItem(
-            icon: Icons.merge_type,
-            title: t.mergeTitle,
-            subtitle: t.mergeHint,
-            color: AppColors.operationColor(0),
-            page: _OperationPage(
-                tag: 'merge', color: AppColors.operationColor(0), child: const _MergeSection()),
+    return Row(
+      children: [90, 180, 270].map((d) {
+        final selected = value == d;
+        return Padding(
+          padding: const EdgeInsets.only(right: 10),
+          child: ChoiceChip(
+            label: Text('$d°'),
+            selected: selected,
+            onSelected: (_) => onChanged(d),
+            selectedColor: AppColors.red,
+            backgroundColor: AppColors.surfaceAlt,
+            labelStyle: TextStyle(
+              color: selected ? Colors.white : AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+            side: BorderSide(color: selected ? AppColors.red : AppColors.border),
+            shape: const StadiumBorder(),
           ),
-          FeatureGridItem(
-            icon: Icons.call_split,
-            title: t.splitTitle,
-            subtitle: t.splitHint,
-            color: AppColors.operationColor(1),
-            page: _OperationPage(
-                tag: 'split', color: AppColors.operationColor(1), child: const _SplitSection()),
-          ),
-          FeatureGridItem(
-            icon: Icons.delete_outline,
-            title: t.removeTitle,
-            subtitle: t.removeHint,
-            color: AppColors.operationColor(2),
-            page: _OperationPage(
-                tag: 'remove', color: AppColors.operationColor(2), child: const _RemovePagesSection()),
-          ),
-          FeatureGridItem(
-            icon: Icons.content_cut,
-            title: t.extractTitle,
-            subtitle: t.extractHint,
-            color: AppColors.operationColor(3),
-            page: _OperationPage(
-                tag: 'extract', color: AppColors.operationColor(3), child: const _ExtractPagesSection()),
-          ),
-          FeatureGridItem(
-            icon: Icons.reorder,
-            title: t.reorderTitle,
-            subtitle: t.reorderHint,
-            color: AppColors.operationColor(4),
-            page: _OperationPage(
-                tag: 'reorder', color: AppColors.operationColor(4), child: const _ReorderSection()),
-          ),
-          FeatureGridItem(
-            icon: Icons.rotate_right,
-            title: t.rotateTitle,
-            subtitle: t.rotateHint,
-            color: AppColors.operationColor(5),
-            page: _OperationPage(
-                tag: 'rotate', color: AppColors.operationColor(5), child: const _RotateSection()),
-          ),
-        ],
-      ),
+        );
+      }).toList(),
     );
   }
 }
 
-/// Wraps a single operation section in its own page, reached from the
-/// operation grid above.
-class _OperationPage extends StatelessWidget {
-  final String tag;
-  final Color color;
-  final Widget child;
-  const _OperationPage({required this.tag, required this.color, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return TerminalScaffold(
-      tag: tag,
-      title: context.t.organizationPageTitle,
-      accent: color,
-      body: ListView(
-        padding: const EdgeInsets.all(12),
-        children: [child],
-      ),
-    );
-  }
-}
-
-/// "Text" / "Visual" segmented switch shared by every section below.
-class _ModeToggle extends StatelessWidget {
-  final _InputMode mode;
-  final ValueChanged<_InputMode> onChanged;
-
-  const _ModeToggle({required this.mode, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.t;
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: SegmentedButton<_InputMode>(
-        segments: [
-          ButtonSegment(
-            value: _InputMode.text,
-            icon: const Icon(Icons.text_fields, size: 16),
-            label: Text(t.modeText),
-          ),
-          ButtonSegment(
-            value: _InputMode.visual,
-            icon: const Icon(Icons.grid_view, size: 16),
-            label: Text(t.modeVisual),
-          ),
-        ],
-        selected: {mode},
-        showSelectedIcon: false,
-        onSelectionChanged: (s) => onChanged(s.first),
-        style: const ButtonStyle(
-            visualDensity: VisualDensity.compact,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-      ),
-    );
-  }
-}
-
-class _VisualHint extends StatelessWidget {
-  const _VisualHint();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        children: [
-          Icon(Icons.info_outline,
-              size: 16, color: Color.lerp(AccentScope.of(context), Colors.white, 0.3)),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(context.t.visualHint,
-                style: Theme.of(context).textTheme.bodySmall),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MergeSection extends StatelessWidget {
-  const _MergeSection();
+class _MergePage extends StatelessWidget {
+  const _MergePage();
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<OrganizationViewModel>();
     final t = context.t;
-    return TerminalSection(
+    return OperationScaffold(
       title: t.mergeTitle,
-      initiallyExpanded: true,
+      accent: AppColors.categoryOrganization,
       children: [
-        ElevatedButton(
-          onPressed: () async {
+        _MultiFileArea(
+          paths: vm.mergeFiles,
+          onTap: () async {
             final r = await FilePicker.platform.pickFiles(
               type: FileType.custom,
               allowedExtensions: ['pdf'],
               allowMultiple: true,
             );
-            if (r != null) {
-              vm.mergeFiles = r.files.map((f) => f.path!).toList();
-            }
+            if (r != null) vm.mergeFiles = r.files.map((f) => f.path!).toList();
           },
-          child: Text(t.selectPdfsMultiple),
         ),
-        if (vm.mergeFiles.isNotEmpty) ...[
-          Text(t.filesSelected(vm.mergeFiles.length)),
-          ...vm.mergeFiles
-              .map((p) => Text('• ${p.split('/').last}',
-              style: Theme.of(context).textTheme.bodySmall)),
-        ],
-        const SizedBox(height: 8),
         ElevatedButton(
           onPressed: vm.mergeFiles.length >= 2 && !vm.isMerging
               ? () => vm.merge()
@@ -201,51 +98,19 @@ class _MergeSection extends StatelessWidget {
   }
 }
 
-class _SplitSection extends StatefulWidget {
-  const _SplitSection();
+class _SplitPage extends StatefulWidget {
+  const _SplitPage();
   @override
-  State<_SplitSection> createState() => _SplitSectionState();
+  State<_SplitPage> createState() => _SplitPageState();
 }
 
-class _SplitSectionState extends State<_SplitSection> {
-  final _rangesController = TextEditingController(text: '1-3,4-6');
-  _InputMode _mode = _InputMode.visual;
-  final List<List<int>> _visualParts = [];
-  Set<int> _visualCurrent = {};
-
-  @override
-  void dispose() {
-    _rangesController.dispose();
-    super.dispose();
-  }
-
-  List<List<int>> _parseRanges(String input) {
-    final ranges = <List<int>>[];
-    for (final part in input.split(',')) {
-      final trimmed = part.trim();
-      if (trimmed.contains('-')) {
-        final bounds = trimmed.split('-');
-        if (bounds.length == 2) {
-          final start = int.tryParse(bounds[0].trim());
-          final end = int.tryParse(bounds[1].trim());
-          if (start != null && end != null && start <= end) {
-            ranges.add(List.generate(end - start + 1, (i) => start + i));
-          }
-        }
-      } else {
-        final page = int.tryParse(trimmed);
-        if (page != null) ranges.add([page]);
-      }
-    }
-    return ranges;
-  }
+class _SplitPageState extends State<_SplitPage> {
+  final List<List<int>> _parts = [];
+  Set<int> _current = {};
 
   List<List<int>> _computeRanges() {
-    if (_mode == _InputMode.text) return _parseRanges(_rangesController.text);
-    final parts = List<List<int>>.from(_visualParts);
-    if (_visualCurrent.isNotEmpty) {
-      parts.add(_visualCurrent.toList()..sort());
-    }
+    final parts = List<List<int>>.from(_parts);
+    if (_current.isNotEmpty) parts.add(_current.toList()..sort());
     return parts;
   }
 
@@ -254,71 +119,59 @@ class _SplitSectionState extends State<_SplitSection> {
     final vm = context.watch<OrganizationViewModel>();
     final t = context.t;
     final ranges = _computeRanges();
-    return TerminalSection(
+    return OperationScaffold(
       title: t.splitTitle,
-      initiallyExpanded: true,
+      accent: AppColors.categoryOrganization,
       children: [
         FileTile(
           path: vm.splitFile,
           onTap: () async {
-            final r = await FilePicker.platform.pickFiles(
-                type: FileType.custom, allowedExtensions: ['pdf']);
-            if (r != null) vm.splitFile = r.files.single.path;
+            final p = await _pickPdf();
+            if (p != null) {
+              setState(() {
+                _parts.clear();
+                _current = {};
+              });
+              vm.splitFile = p;
+            }
           },
           onClear: () => vm.splitFile = null,
         ),
-        const SizedBox(height: 8),
-        _ModeToggle(mode: _mode, onChanged: (m) => setState(() => _mode = m)),
-        const SizedBox(height: 8),
-        if (_mode == _InputMode.text)
-          TextField(
-            controller: _rangesController,
-            decoration: InputDecoration(
-              labelText: t.rangesLabel,
-              isDense: true,
+        if (vm.splitFile != null) ...[
+          FieldLabel(text: t.visualSplitHint),
+          PdfPageMultiSelect(
+            path: vm.splitFile!,
+            selected: _current,
+            onChanged: (s) => setState(() => _current = s),
+            actionsBuilder: (total) => PageSelectAllActions(
+              totalPages: total,
+              onSelectAll: () => setState(
+                  () => _current = Set.from(List.generate(total, (i) => i + 1))),
+              onClear: () => setState(() => _current = {}),
             ),
-          )
-        else if (vm.splitFile == null)
-          const _VisualHint()
-        else ...[
-            Text(t.visualSplitHint,
-                style: Theme.of(context).textTheme.bodySmall),
-            PdfPageMultiSelect(
-              path: vm.splitFile!,
-              selected: _visualCurrent,
-              onChanged: (s) => setState(() => _visualCurrent = s),
-              actionsBuilder: (total) => PageSelectAllActions(
-                totalPages: total,
-                onSelectAll: () => setState(() => _visualCurrent =
-                    Set.from(List.generate(total, (i) => i + 1))),
-                onClear: () => setState(() => _visualCurrent = {}),
-              ),
+          ),
+          if (_parts.isNotEmpty)
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: _parts.asMap().entries.map((e) {
+                return Chip(
+                  label: Text(t.partLabel(e.key + 1, e.value.join(","))),
+                  onDeleted: () => setState(() => _parts.removeAt(e.key)),
+                );
+              }).toList(),
             ),
-            if (_visualParts.isNotEmpty)
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: _visualParts.asMap().entries.map((e) {
-                  return Chip(
-                    label: Text(t.partLabel(e.key + 1, e.value.join(","))),
-                    onDeleted: () =>
-                        setState(() => _visualParts.removeAt(e.key)),
-                  );
-                }).toList(),
-              ),
-            const SizedBox(height: 4),
-            TextButton.icon(
-              onPressed: _visualCurrent.isEmpty
-                  ? null
-                  : () => setState(() {
-                _visualParts.add(_visualCurrent.toList()..sort());
-                _visualCurrent = {};
-              }),
-              icon: const Icon(Icons.add),
-              label: Text(t.addPartButton),
-            ),
-          ],
-        const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: _current.isEmpty
+                ? null
+                : () => setState(() {
+                      _parts.add(_current.toList()..sort());
+                      _current = {};
+                    }),
+            icon: const Icon(Icons.add, size: 18),
+            label: Text(t.addPartButton),
+          ),
+        ],
         ElevatedButton(
           onPressed: vm.splitFile != null && !vm.isSplitting && ranges.isNotEmpty
               ? () => vm.split(ranges)
@@ -326,88 +179,62 @@ class _SplitSectionState extends State<_SplitSection> {
           child: Text(t.splitButton),
         ),
         ResultCard(result: vm.splitResult, isLoading: vm.isSplitting),
-        if (vm.splitResult?.isSuccess == true &&
-            vm.splitResult!.outputPaths != null)
-          ...vm.splitResult!.outputPaths!.asMap().entries.map(
-                  (e) => Text(
-                  t.partResultLabel(e.key + 1, e.value.split('/').last),
-                  style: Theme.of(context).textTheme.bodySmall)),
+        if (vm.splitResult?.isSuccess == true && vm.splitResult!.outputPaths != null)
+          ...vm.splitResult!.outputPaths!.asMap().entries.map((e) => Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  t.partResultLabel(e.key + 1, e.value.split(RegExp(r'[\\/]')).last),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              )),
       ],
     );
   }
 }
 
-class _RemovePagesSection extends StatefulWidget {
-  const _RemovePagesSection();
+class _RemovePage extends StatefulWidget {
+  const _RemovePage();
   @override
-  State<_RemovePagesSection> createState() => _RemovePagesSectionState();
+  State<_RemovePage> createState() => _RemovePageState();
 }
 
-class _RemovePagesSectionState extends State<_RemovePagesSection> {
-  final _ctrl = TextEditingController(text: '2,4');
-  _InputMode _mode = _InputMode.visual;
-  Set<int> _visualSelected = {};
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  List<int> _computePages() {
-    if (_mode == _InputMode.text) {
-      return _ctrl.text
-          .split(',')
-          .map((s) => int.tryParse(s.trim()))
-          .whereType<int>()
-          .toList();
-    }
-    return _visualSelected.toList()..sort();
-  }
+class _RemovePageState extends State<_RemovePage> {
+  Set<int> _selected = {};
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<OrganizationViewModel>();
     final t = context.t;
-    final pages = _computePages();
-    return TerminalSection(
+    final pages = _selected.toList()..sort();
+    return OperationScaffold(
       title: t.removeTitle,
-      initiallyExpanded: true,
+      accent: AppColors.categoryOrganization,
       children: [
         FileTile(
           path: vm.removeFile,
           onTap: () async {
-            final r = await FilePicker.platform.pickFiles(
-                type: FileType.custom, allowedExtensions: ['pdf']);
-            if (r != null) vm.removeFile = r.files.single.path;
+            final p = await _pickPdf();
+            if (p != null) {
+              setState(() => _selected = {});
+              vm.removeFile = p;
+            }
           },
           onClear: () => vm.removeFile = null,
         ),
-        const SizedBox(height: 8),
-        _ModeToggle(mode: _mode, onChanged: (m) => setState(() => _mode = m)),
-        const SizedBox(height: 8),
-        if (_mode == _InputMode.text)
-          TextField(
-            controller: _ctrl,
-            decoration: InputDecoration(
-                labelText: t.removePagesLabel, isDense: true),
-          )
-        else if (vm.removeFile == null)
-          const _VisualHint()
+        if (vm.removeFile == null)
+          Text(t.visualHint, style: Theme.of(context).textTheme.bodySmall)
         else
           PdfPageMultiSelect(
             path: vm.removeFile!,
-            selected: _visualSelected,
-            selectedColor: Colors.red.shade400,
-            onChanged: (s) => setState(() => _visualSelected = s),
+            selected: _selected,
+            onChanged: (s) => setState(() => _selected = s),
             actionsBuilder: (total) => PageSelectAllActions(
               totalPages: total,
-              onSelectAll: () => setState(() => _visualSelected =
-                  Set.from(List.generate(total, (i) => i + 1))),
-              onClear: () => setState(() => _visualSelected = {}),
+              onSelectAll: () => setState(
+                  () => _selected = Set.from(List.generate(total, (i) => i + 1))),
+              onClear: () => setState(() => _selected = {}),
             ),
           ),
-        const SizedBox(height: 8),
         ElevatedButton(
           onPressed: vm.removeFile != null && !vm.isRemoving && pages.isNotEmpty
               ? () => vm.removePages(pages)
@@ -420,80 +247,51 @@ class _RemovePagesSectionState extends State<_RemovePagesSection> {
   }
 }
 
-class _ExtractPagesSection extends StatefulWidget {
-  const _ExtractPagesSection();
+class _ExtractPage extends StatefulWidget {
+  const _ExtractPage();
   @override
-  State<_ExtractPagesSection> createState() => _ExtractPagesSectionState();
+  State<_ExtractPage> createState() => _ExtractPageState();
 }
 
-class _ExtractPagesSectionState extends State<_ExtractPagesSection> {
-  final _ctrl = TextEditingController(text: '1,3,5');
-  _InputMode _mode = _InputMode.visual;
-  Set<int> _visualSelected = {};
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  List<int> _computePages() {
-    if (_mode == _InputMode.text) {
-      return _ctrl.text
-          .split(',')
-          .map((s) => int.tryParse(s.trim()))
-          .whereType<int>()
-          .toList();
-    }
-    return _visualSelected.toList()..sort();
-  }
+class _ExtractPageState extends State<_ExtractPage> {
+  Set<int> _selected = {};
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<OrganizationViewModel>();
     final t = context.t;
-    final pages = _computePages();
-    return TerminalSection(
+    final pages = _selected.toList()..sort();
+    return OperationScaffold(
       title: t.extractTitle,
-      initiallyExpanded: true,
+      accent: AppColors.categoryOrganization,
       children: [
         FileTile(
           path: vm.extractFile,
           onTap: () async {
-            final r = await FilePicker.platform.pickFiles(
-                type: FileType.custom, allowedExtensions: ['pdf']);
-            if (r != null) vm.extractFile = r.files.single.path;
+            final p = await _pickPdf();
+            if (p != null) {
+              setState(() => _selected = {});
+              vm.extractFile = p;
+            }
           },
           onClear: () => vm.extractFile = null,
         ),
-        const SizedBox(height: 8),
-        _ModeToggle(mode: _mode, onChanged: (m) => setState(() => _mode = m)),
-        const SizedBox(height: 8),
-        if (_mode == _InputMode.text)
-          TextField(
-            controller: _ctrl,
-            decoration: InputDecoration(
-                labelText: t.extractPagesLabel, isDense: true),
-          )
-        else if (vm.extractFile == null)
-          const _VisualHint()
+        if (vm.extractFile == null)
+          Text(t.visualHint, style: Theme.of(context).textTheme.bodySmall)
         else
           PdfPageMultiSelect(
             path: vm.extractFile!,
-            selected: _visualSelected,
-            selectedColor: Colors.green.shade600,
-            onChanged: (s) => setState(() => _visualSelected = s),
+            selected: _selected,
+            onChanged: (s) => setState(() => _selected = s),
             actionsBuilder: (total) => PageSelectAllActions(
               totalPages: total,
-              onSelectAll: () => setState(() => _visualSelected =
-                  Set.from(List.generate(total, (i) => i + 1))),
-              onClear: () => setState(() => _visualSelected = {}),
+              onSelectAll: () => setState(
+                  () => _selected = Set.from(List.generate(total, (i) => i + 1))),
+              onClear: () => setState(() => _selected = {}),
             ),
           ),
-        const SizedBox(height: 8),
         ElevatedButton(
-          onPressed:
-          vm.extractFile != null && !vm.isExtracting && pages.isNotEmpty
+          onPressed: vm.extractFile != null && !vm.isExtracting && pages.isNotEmpty
               ? () => vm.extractPages(pages)
               : null,
           child: Text(t.extractButton),
@@ -504,81 +302,49 @@ class _ExtractPagesSectionState extends State<_ExtractPagesSection> {
   }
 }
 
-class _ReorderSection extends StatefulWidget {
-  const _ReorderSection();
+class _ReorderPage extends StatefulWidget {
+  const _ReorderPage();
   @override
-  State<_ReorderSection> createState() => _ReorderSectionState();
+  State<_ReorderPage> createState() => _ReorderPageState();
 }
 
-class _ReorderSectionState extends State<_ReorderSection> {
-  final _ctrl = TextEditingController(text: '3,1,2');
-  _InputMode _mode = _InputMode.visual;
-  List<int>? _visualOrder;
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  List<int> _computeOrder() {
-    if (_mode == _InputMode.text) {
-      return _ctrl.text
-          .split(',')
-          .map((s) => int.tryParse(s.trim()))
-          .whereType<int>()
-          .toList();
-    }
-    return _visualOrder ?? [];
-  }
+class _ReorderPageState extends State<_ReorderPage> {
+  List<int>? _order;
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<OrganizationViewModel>();
     final t = context.t;
-    final order = _computeOrder();
-    return TerminalSection(
+    final order = _order ?? [];
+    return OperationScaffold(
       title: t.reorderTitle,
-      initiallyExpanded: true,
+      accent: AppColors.categoryOrganization,
       children: [
         FileTile(
           path: vm.reorderFile,
           onTap: () async {
-            final r = await FilePicker.platform.pickFiles(
-                type: FileType.custom, allowedExtensions: ['pdf']);
-            if (r != null) {
-              setState(() => _visualOrder = null);
-              vm.reorderFile = r.files.single.path;
+            final p = await _pickPdf();
+            if (p != null) {
+              setState(() => _order = null);
+              vm.reorderFile = p;
             }
           },
           onClear: () {
-            setState(() => _visualOrder = null);
+            setState(() => _order = null);
             vm.reorderFile = null;
           },
         ),
-        const SizedBox(height: 8),
-        _ModeToggle(mode: _mode, onChanged: (m) => setState(() => _mode = m)),
-        const SizedBox(height: 8),
-        if (_mode == _InputMode.text)
-          TextField(
-            controller: _ctrl,
-            decoration: InputDecoration(
-                labelText: t.reorderLabel, isDense: true),
-          )
-        else if (vm.reorderFile == null)
-          const _VisualHint()
+        if (vm.reorderFile == null)
+          Text(t.visualHint, style: Theme.of(context).textTheme.bodySmall)
         else ...[
-            Text(t.reorderVisualHint,
-                style: Theme.of(context).textTheme.bodySmall),
-            PdfPageReorderList(
-              path: vm.reorderFile!,
-              onChanged: (o) => setState(() => _visualOrder = o),
-            ),
-          ],
-        const SizedBox(height: 8),
+          FieldLabel(text: t.reorderVisualHint),
+          PdfPageReorderList(
+            path: vm.reorderFile!,
+            onChanged: (o) => setState(() => _order = o),
+          ),
+        ],
         ElevatedButton(
-          onPressed:
-          vm.reorderFile != null && !vm.isReordering && order.isNotEmpty
+          onPressed: vm.reorderFile != null && !vm.isReordering && order.isNotEmpty
               ? () => vm.reorderPages(order)
               : null,
           child: Text(t.reorderButton),
@@ -589,119 +355,134 @@ class _ReorderSectionState extends State<_ReorderSection> {
   }
 }
 
-class _RotateSection extends StatefulWidget {
-  const _RotateSection();
+class _RotatePage extends StatefulWidget {
+  const _RotatePage();
   @override
-  State<_RotateSection> createState() => _RotateSectionState();
+  State<_RotatePage> createState() => _RotatePageState();
 }
 
-class _RotateSectionState extends State<_RotateSection> {
-  final _pagesCtrl = TextEditingController(text: '1,2');
+class _RotatePageState extends State<_RotatePage> {
   int _degrees = 90;
-  _InputMode _mode = _InputMode.visual;
-  Set<int> _visualSelected = {};
-
-  @override
-  void dispose() {
-    _pagesCtrl.dispose();
-    super.dispose();
-  }
-
-  /// null means "all pages" (only reachable from text mode's empty field).
-  List<int>? _computePages() {
-    if (_mode == _InputMode.text) {
-      final input = _pagesCtrl.text.trim();
-      if (input.isEmpty) return null;
-      return input
-          .split(',')
-          .map((s) => int.tryParse(s.trim()))
-          .whereType<int>()
-          .toList();
-    }
-    return _visualSelected.isEmpty ? null : (_visualSelected.toList()..sort());
-  }
-
-  Future<void> _rotate(OrganizationViewModel vm) async {
-    final pages = _computePages();
-    final rotations = <int, int>{};
-    if (pages != null) {
-      for (final p in pages) {
-        rotations[p] = _degrees;
-      }
-    } else {
-      final count = await FileUtils.getPdfPageCount(vm.rotateFile!);
-      for (int p = 1; p <= count; p++) {
-        rotations[p] = _degrees;
-      }
-    }
-    vm.rotatePages(rotations);
-  }
+  Set<int> _selected = {};
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<OrganizationViewModel>();
     final t = context.t;
-    final computed = _computePages();
-    final canRotate = vm.rotateFile != null &&
-        !vm.isRotating &&
-        (_mode == _InputMode.text || (computed != null && computed.isNotEmpty));
-    return TerminalSection(
+    final canRotate = vm.rotateFile != null && !vm.isRotating && _selected.isNotEmpty;
+    return OperationScaffold(
       title: t.rotateTitle,
-      initiallyExpanded: true,
+      accent: AppColors.categoryOrganization,
       children: [
         FileTile(
           path: vm.rotateFile,
           onTap: () async {
-            final r = await FilePicker.platform.pickFiles(
-                type: FileType.custom, allowedExtensions: ['pdf']);
-            if (r != null) vm.rotateFile = r.files.single.path;
+            final p = await _pickPdf();
+            if (p != null) {
+              setState(() => _selected = {});
+              vm.rotateFile = p;
+            }
           },
           onClear: () => vm.rotateFile = null,
         ),
-        const SizedBox(height: 8),
-        _ModeToggle(mode: _mode, onChanged: (m) => setState(() => _mode = m)),
-        const SizedBox(height: 8),
-        if (_mode == _InputMode.text)
-          TextField(
-            controller: _pagesCtrl,
-            decoration: InputDecoration(
-                labelText: t.rotatePagesLabel, isDense: true),
-          )
-        else if (vm.rotateFile == null)
-          const _VisualHint()
-        else
+        if (vm.rotateFile == null)
+          Text(t.visualHint, style: Theme.of(context).textTheme.bodySmall)
+        else ...[
+          _DegreesSelector(value: _degrees, onChanged: (d) => setState(() => _degrees = d)),
           PdfPageMultiSelect(
             path: vm.rotateFile!,
-            selected: _visualSelected,
-            previewRotationOf: (p) =>
-            _visualSelected.contains(p) ? _degrees : 0,
-            onChanged: (s) => setState(() => _visualSelected = s),
+            selected: _selected,
+            previewRotationOf: (p) => _selected.contains(p) ? _degrees : 0,
+            onChanged: (s) => setState(() => _selected = s),
             actionsBuilder: (total) => PageSelectAllActions(
               totalPages: total,
-              onSelectAll: () => setState(() => _visualSelected =
-                  Set.from(List.generate(total, (i) => i + 1))),
-              onClear: () => setState(() => _visualSelected = {}),
+              onSelectAll: () => setState(
+                  () => _selected = Set.from(List.generate(total, (i) => i + 1))),
+              onClear: () => setState(() => _selected = {}),
             ),
           ),
-        DropdownButton<int>(
-          value: _degrees,
-          items: [
-            DropdownMenuItem(
-                value: 90, child: Text('90°', style: AppTextStyles.digit(fontSize: 18, color: AccentScope.of(context)))),
-            DropdownMenuItem(
-                value: 180, child: Text('180°', style: AppTextStyles.digit(fontSize: 18, color: AccentScope.of(context)))),
-            DropdownMenuItem(
-                value: 270, child: Text('270°', style: AppTextStyles.digit(fontSize: 18, color: AccentScope.of(context)))),
-          ],
-          onChanged: (v) => setState(() => _degrees = v!),
-        ),
-        const SizedBox(height: 8),
+        ],
         ElevatedButton(
-          onPressed: canRotate ? () => _rotate(vm) : null,
+          onPressed: canRotate
+              ? () => vm.rotatePages({for (final p in _selected) p: _degrees})
+              : null,
           child: Text(t.rotateButton),
         ),
         ResultCard(result: vm.rotateResult, isLoading: vm.isRotating),
       ],
+    );
+  }
+}
+
+/// Área de selección de múltiples PDFs (Unir) — mismo lenguaje visual que
+/// [FileTile]: borde de categoría cuando está vacía, tarjeta clara con la
+/// lista de archivos una vez elegidos.
+class _MultiFileArea extends StatelessWidget {
+  final List<String> paths;
+  final VoidCallback onTap;
+  const _MultiFileArea({required this.paths, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final accent = AccentScope.of(context);
+
+    if (paths.isEmpty) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: accent, width: 1.4),
+          ),
+          child: Column(
+            children: [
+              Icon(Icons.upload_file_outlined, color: accent, size: 26),
+              const SizedBox(height: 8),
+              Text(t.selectPdfsMultiple,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(color: accent)),
+              const SizedBox(height: 2),
+              Text(t.noFileSelected, style: Theme.of(context).textTheme.bodySmall),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: AppTheme.card(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(t.filesSelected(paths.length), style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 10),
+          ...paths.map((p) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    Icon(Icons.picture_as_pdf_outlined, size: 16, color: accent),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        p.split(RegExp(r'[\\/]')).last,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(onPressed: onTap, child: Text(t.changeFile)),
+          ),
+        ],
+      ),
     );
   }
 }

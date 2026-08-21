@@ -1,21 +1,64 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../controllers/recent_files_controller.dart';
 import '../l10n/app_strings.dart';
 import '../result/result.dart';
 import '../theme/app_theme.dart';
-import 'glass_panel.dart';
+import '../utils/file_utils.dart';
 
-class ResultCard extends StatelessWidget {
+/// Feedback de una operación: progreso mientras corre, tarjeta de éxito
+/// con acción clara de siguiente paso (abrir / compartir), o error legible.
+/// Registra automáticamente el archivo resultante en Recientes la primera
+/// vez que [result] pasa a éxito, así ninguna pantalla de herramienta
+/// necesita cablear ese seguimiento a mano.
+class ResultCard extends StatefulWidget {
   final OperationResult? result;
   final bool isLoading;
 
   const ResultCard({super.key, this.result, this.isLoading = false});
 
   @override
+  State<ResultCard> createState() => _ResultCardState();
+}
+
+class _ResultCardState extends State<ResultCard> {
+  OperationResult? _recordedFor;
+
+  @override
+  void didUpdateWidget(covariant ResultCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _maybeRecord();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeRecord());
+  }
+
+  void _maybeRecord() {
+    final result = widget.result;
+    if (result == null || !result.isSuccess || result == _recordedFor) return;
+    final paths = result.outputPaths ??
+        (result.outputPath != null ? [result.outputPath!] : <String>[]);
+    if (paths.isEmpty) return;
+    _recordedFor = result;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final controller = context.read<RecentFilesController>();
+      for (final p in paths) {
+        controller.record(p);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 250),
+      duration: const Duration(milliseconds: 220),
       switchInCurve: Curves.easeOut,
       transitionBuilder: (child, animation) => FadeTransition(
         opacity: animation,
@@ -31,162 +74,138 @@ class ResultCard extends StatelessWidget {
 
   Widget _buildContent(BuildContext context) {
     final t = context.t;
-    if (isLoading) {
+    final accent = AccentScope.of(context);
+
+    if (widget.isLoading) {
       return Padding(
         key: const ValueKey('loading'),
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
-              child: const LinearProgressIndicator(minHeight: 4),
+              child: LinearProgressIndicator(
+                minHeight: 4,
+                color: accent,
+                backgroundColor: AppColors.surfaceAlt,
+              ),
             ),
             const SizedBox(height: 10),
             Text(
-              t.processing.toUpperCase(),
+              t.processing,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: AppColors.textSecondary),
             ),
           ],
         ),
       );
     }
+    final result = widget.result;
     if (result == null) return const SizedBox.shrink(key: ValueKey('empty'));
 
-    if (!result!.isSuccess) {
-      return Padding(
+    if (!result.isSuccess) {
+      return Container(
         key: const ValueKey('error'),
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: GlassPanel(
-          accent: AppColors.red,
-          radius: 14,
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: AppColors.red, size: 18),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  t.errorMessage(result!.error ?? ''),
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: AppColors.red, height: 1.4),
-                ),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.redTint,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.red.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.error_outline, color: AppColors.red, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                t.errorMessage(result.error ?? ''),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: AppColors.redPressed, height: 1.4),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
 
-    final paths = result!.outputPaths ??
-        (result!.outputPath != null ? [result!.outputPath!] : []);
-    final accent = AccentScope.of(context);
+    final paths = result.outputPaths ??
+        (result.outputPath != null ? [result.outputPath!] : <String>[]);
 
-    return Padding(
+    return Container(
       key: const ValueKey('success'),
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: GlassPanel(
-        accent: accent,
-        radius: 16,
-        padding: const EdgeInsets.all(16),
-        child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      padding: const EdgeInsets.all(16),
+      decoration: AppTheme.card(borderColor: accent.withValues(alpha: 0.35)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
             children: [
               TweenAnimationBuilder<double>(
                 tween: Tween(begin: 0, end: 1),
-                duration: const Duration(milliseconds: 350),
+                duration: const Duration(milliseconds: 320),
                 curve: Curves.elasticOut,
                 builder: (context, v, child) =>
                     Transform.scale(scale: v, child: child),
-                child: Icon(Icons.check_circle, color: accent, size: 18),
+                child: Icon(Icons.check_circle, color: accent, size: 20),
               ),
               const SizedBox(width: 8),
-              Text(t.done.toUpperCase(), style: Theme.of(context).textTheme.labelLarge),
+              Text(t.done, style: Theme.of(context).textTheme.titleMedium),
             ],
           ),
-          const SizedBox(height: 10),
-          ...paths.map((p) => Padding(
-            padding: const EdgeInsets.only(top: 3),
-            child: Text(
-              p.split('/').last,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.4),
+          if (paths.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            ...paths.map((p) => Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Text(
+                    p.split(RegExp(r'[\\/]')).last,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(color: AppColors.textSecondary),
+                  ),
+                )),
+          ],
+          if (paths.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => OpenFilex.open(paths.first),
+                    style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 13)),
+                    child: Text(t.open),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () =>
+                        Share.shareXFiles(paths.map((p) => XFile(p)).toList()),
+                    style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 13)),
+                    child: Text(t.share),
+                  ),
+                ),
+              ],
             ),
-          )),
-          const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (paths.isNotEmpty)
-                _ActionButton(
-                  icon: Icons.open_in_new,
-                  label: t.open,
-                  onPressed: () => OpenFilex.open(paths.first),
-                ),
-              if (paths.isNotEmpty) const SizedBox(width: 10),
-              if (paths.isNotEmpty)
-                _ActionButton(
-                  icon: Icons.ios_share,
-                  label: t.share,
-                  onPressed: () =>
-                      Share.shareXFiles(paths.map((p) => XFile(p)).toList()),
-                ),
-            ],
-          ),
           ],
-        ),
+        ],
       ),
     );
   }
 }
 
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-
-  const _ActionButton(
-      {required this.icon, required this.label, required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = AccentScope.of(context);
-    return InkWell(
-      borderRadius: BorderRadius.circular(20),
-      onTap: onPressed,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color.lerp(Colors.black, accent, 0.22)!, Colors.black],
-          ),
-          border: Border.fromBorderSide(BorderSide(color: accent)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: accent),
-            const SizedBox(width: 6),
-            Text(label.toUpperCase(), style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
+/// Selector de archivo grande y claro — nunca solo un ícono. Estado vacío:
+/// tap directo al picker nativo, borde punteado en el color de categoría.
+/// Estado con archivo: nombre + tamaño, con "Cambiar" como siguiente paso.
 class FileTile extends StatelessWidget {
   final String? path;
   final String? label;
@@ -204,61 +223,87 @@ class FileTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.t;
-    final selected = path != null;
     final accent = AccentScope.of(context);
-    final accentSoft = Color.lerp(accent, Colors.white, 0.3)!;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOut,
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
+    final selected = path != null;
+
+    if (!selected) {
+      return InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(14),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color.lerp(Colors.black, accent, 0.16)!, Colors.black],
-        ),
-        border: Border.fromBorderSide(BorderSide(color: accent)),
-      ),
-      child: ListTile(
-        dense: true,
-        contentPadding: EdgeInsets.zero,
-        leading: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          child: Icon(
-            selected ? Icons.picture_as_pdf_outlined : Icons.upload_file,
-            key: ValueKey(selected),
-            size: 18,
-            color: accent,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: accent, width: 1.4),
           ),
-        ),
-        title: Text(
-          path?.split('/').last ?? label ?? t.noFileSelected,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: selected ? accent : accentSoft,
-          ),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextButton(
-              onPressed: onTap,
-              child: Text(
-                t.select.toUpperCase(),
+          child: Column(
+            children: [
+              Icon(Icons.upload_file_outlined, color: accent, size: 26),
+              const SizedBox(height: 8),
+              Text(
+                label ?? t.selectFileCta,
                 style: Theme.of(context)
                     .textTheme
-                    .bodySmall
-                    ?.copyWith(color: accent, fontWeight: FontWeight.w700),
+                    .titleMedium
+                    ?.copyWith(color: accent),
               ),
-            ),
-            if (selected && onClear != null)
-              IconButton(
-                icon: Icon(Icons.close, size: 16, color: accent),
-                onPressed: onClear,
+              const SizedBox(height: 2),
+              Text(
+                t.noFileSelected,
+                style: Theme.of(context).textTheme.bodySmall,
               ),
-          ],
+            ],
+          ),
         ),
+      );
+    }
+
+    int sizeBytes = 0;
+    try {
+      sizeBytes = File(path!).lengthSync();
+    } catch (_) {}
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: AppTheme.card(),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: accent, width: 1.2),
+            ),
+            child: Icon(Icons.picture_as_pdf_outlined, color: accent, size: 19),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  path!.split(RegExp(r'[\\/]')).last,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                ),
+                Text(FileUtils.formatFileSize(sizeBytes),
+                    style: Theme.of(context).textTheme.bodySmall),
+              ],
+            ),
+          ),
+          TextButton(onPressed: onTap, child: Text(t.changeFile)),
+          if (onClear != null)
+            IconButton(
+              icon: const Icon(Icons.close, size: 18, color: AppColors.textTertiary),
+              onPressed: onClear,
+            ),
+        ],
       ),
     );
   }

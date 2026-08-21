@@ -3,82 +3,29 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/feature_grid.dart';
+import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/result_card.dart';
-import '../../../../core/widgets/terminal_widgets.dart';
+import '../../../../core/widgets/tool_list.dart';
 import '../viewmodels/security_view_model.dart';
 
-class SecurityPage extends StatelessWidget {
-  const SecurityPage({super.key});
+const _accent = AppColors.categorySecurity;
 
-  @override
-  Widget build(BuildContext context) {
-    final t = context.t;
-    return TerminalScaffold(
-      tag: 'secure',
-      title: t.securityPageTitle,
-      accent: AppColors.accentSecurity,
-      body: FeatureGrid(
-        items: [
-          FeatureGridItem(
-            icon: Icons.lock_outline,
-            title: t.protectTitle,
-            subtitle: t.protectHint,
-            color: AppColors.operationColor(0),
-            page: _OperationPage(
-                tag: 'protect', color: AppColors.operationColor(0), child: const _ProtectSection()),
-          ),
-          FeatureGridItem(
-            icon: Icons.lock_open_outlined,
-            title: t.unprotectTitle,
-            subtitle: t.unprotectHint,
-            color: AppColors.operationColor(1),
-            page: _OperationPage(
-                tag: 'unprotect', color: AppColors.operationColor(1), child: const _UnprotectSection()),
-          ),
-          FeatureGridItem(
-            icon: Icons.compress,
-            title: t.compressTitle,
-            subtitle: t.compressHint,
-            color: AppColors.operationColor(2),
-            page: _OperationPage(
-                tag: 'compress', color: AppColors.operationColor(2), child: const _CompressSection()),
-          ),
-        ],
-      ),
-    );
-  }
+List<ToolItem> securityTools(BuildContext context) {
+  final t = context.t;
+  return [
+    ToolItem(icon: Icons.lock_outline, title: t.protectTitle, page: const _ProtectPage()),
+    ToolItem(icon: Icons.lock_open_outlined, title: t.unprotectTitle, page: const _UnprotectPage()),
+    ToolItem(icon: Icons.compress, title: t.compressTitle, page: const _CompressPage()),
+  ];
 }
 
-/// Wraps a single operation section in its own page, reached from the
-/// operation grid above.
-class _OperationPage extends StatelessWidget {
-  final String tag;
-  final Color color;
-  final Widget child;
-  const _OperationPage({required this.tag, required this.color, required this.child});
-
+class _ProtectPage extends StatefulWidget {
+  const _ProtectPage();
   @override
-  Widget build(BuildContext context) {
-    return TerminalScaffold(
-      tag: tag,
-      title: context.t.securityPageTitle,
-      accent: color,
-      body: ListView(
-        padding: const EdgeInsets.all(12),
-        children: [child],
-      ),
-    );
-  }
+  State<_ProtectPage> createState() => _ProtectPageState();
 }
 
-class _ProtectSection extends StatefulWidget {
-  const _ProtectSection();
-  @override
-  State<_ProtectSection> createState() => _ProtectSectionState();
-}
-
-class _ProtectSectionState extends State<_ProtectSection> {
+class _ProtectPageState extends State<_ProtectPage> {
   final _pwdCtrl = TextEditingController();
   bool _obscure = true;
 
@@ -92,9 +39,9 @@ class _ProtectSectionState extends State<_ProtectSection> {
   Widget build(BuildContext context) {
     final vm = context.watch<SecurityViewModel>();
     final t = context.t;
-    return TerminalSection(
+    return OperationScaffold(
       title: t.protectTitle,
-      initiallyExpanded: true,
+      accent: _accent,
       children: [
         FileTile(
           path: vm.protectFile,
@@ -105,7 +52,6 @@ class _ProtectSectionState extends State<_ProtectSection> {
           },
           onClear: () => vm.protectFile = null,
         ),
-        const SizedBox(height: 8),
         TextField(
           controller: _pwdCtrl,
           obscureText: _obscure,
@@ -113,17 +59,13 @@ class _ProtectSectionState extends State<_ProtectSection> {
           decoration: InputDecoration(
             labelText: t.passwordLabel,
             suffixIcon: IconButton(
-              icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off,
-                  size: 18),
+              icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined, size: 20),
               onPressed: () => setState(() => _obscure = !_obscure),
             ),
           ),
         ),
-        const SizedBox(height: 8),
         ElevatedButton(
-          onPressed: vm.protectFile != null &&
-              _pwdCtrl.text.isNotEmpty &&
-              !vm.isProtecting
+          onPressed: vm.protectFile != null && _pwdCtrl.text.isNotEmpty && !vm.isProtecting
               ? () => vm.protect(_pwdCtrl.text)
               : null,
           child: Text(t.protectButton),
@@ -134,13 +76,13 @@ class _ProtectSectionState extends State<_ProtectSection> {
   }
 }
 
-class _UnprotectSection extends StatefulWidget {
-  const _UnprotectSection();
+class _UnprotectPage extends StatefulWidget {
+  const _UnprotectPage();
   @override
-  State<_UnprotectSection> createState() => _UnprotectSectionState();
+  State<_UnprotectPage> createState() => _UnprotectPageState();
 }
 
-class _UnprotectSectionState extends State<_UnprotectSection> {
+class _UnprotectPageState extends State<_UnprotectPage> {
   final _pwdCtrl = TextEditingController();
 
   @override
@@ -153,9 +95,9 @@ class _UnprotectSectionState extends State<_UnprotectSection> {
   Widget build(BuildContext context) {
     final vm = context.watch<SecurityViewModel>();
     final t = context.t;
-    return TerminalSection(
+    return OperationScaffold(
       title: t.unprotectTitle,
-      initiallyExpanded: true,
+      accent: _accent,
       children: [
         FileTile(
           path: vm.unprotectFile,
@@ -166,13 +108,11 @@ class _UnprotectSectionState extends State<_UnprotectSection> {
           },
           onClear: () => vm.unprotectFile = null,
         ),
-        const SizedBox(height: 8),
         TextField(
           controller: _pwdCtrl,
           obscureText: true,
           decoration: InputDecoration(labelText: t.currentPasswordLabel),
         ),
-        const SizedBox(height: 8),
         ElevatedButton(
           onPressed: vm.unprotectFile != null && !vm.isUnprotecting
               ? () => vm.unprotect(_pwdCtrl.text)
@@ -185,19 +125,18 @@ class _UnprotectSectionState extends State<_UnprotectSection> {
   }
 }
 
-class _CompressSection extends StatelessWidget {
-  const _CompressSection();
+class _CompressPage extends StatelessWidget {
+  const _CompressPage();
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<SecurityViewModel>();
     final t = context.t;
-    return TerminalSection(
+    return OperationScaffold(
       title: t.compressTitle,
-      initiallyExpanded: true,
+      accent: _accent,
       children: [
         Text(t.compressDesc, style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 8),
         FileTile(
           path: vm.compressFile,
           onTap: () async {
@@ -207,7 +146,6 @@ class _CompressSection extends StatelessWidget {
           },
           onClear: () => vm.compressFile = null,
         ),
-        const SizedBox(height: 8),
         ElevatedButton(
           onPressed: vm.compressFile != null && !vm.isCompressing
               ? () => vm.compress()

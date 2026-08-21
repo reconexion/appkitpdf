@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'core/controllers/recent_files_controller.dart';
 import 'core/l10n/app_strings.dart';
 import 'core/theme/app_theme.dart';
 import 'features/conversion/presentation/viewmodels/conversion_view_model.dart';
@@ -34,11 +35,13 @@ class PdfKitApp extends StatelessWidget {
             create: (_) => Injection.securityViewModel),
         ChangeNotifierProvider<ExtrasViewModel>(
             create: (_) => Injection.extrasViewModel),
+        ChangeNotifierProvider<RecentFilesController>(
+            create: (_) => Injection.recentFilesController),
       ],
       child: MaterialApp(
         title: 'KitPDF',
         debugShowCheckedModeBanner: false,
-        theme: AppTheme.dark,
+        theme: AppTheme.theme,
         home: const HomePage(),
       ),
     );

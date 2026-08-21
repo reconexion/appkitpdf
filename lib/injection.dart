@@ -9,6 +9,7 @@ import 'features/editing/presentation/viewmodels/editing_view_model.dart';
 import 'features/extras/data/datasources/extras_data_source.dart';
 import 'features/extras/data/repositories/extras_repository_impl.dart';
 import 'features/extras/domain/usecases/extras_usecases.dart';
+import 'core/controllers/recent_files_controller.dart';
 import 'features/extras/presentation/viewmodels/extras_view_model.dart';
 import 'features/organization/data/datasources/organization_data_source.dart';
 import 'features/organization/data/repositories/organization_repository_impl.dart';
@@ -75,4 +76,7 @@ class Injection {
     comparePdfs: ComparePdfs(_extRepo),
     repairPdf: RepairPdf(_extRepo),
   );
+
+  // ─── Home ───────────────────────────────────────────────────
+  static final recentFilesController = RecentFilesController();
 }

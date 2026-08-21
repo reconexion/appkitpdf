@@ -3,109 +3,35 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/feature_grid.dart';
+import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/result_card.dart';
-import '../../../../core/widgets/terminal_widgets.dart';
+import '../../../../core/widgets/tool_list.dart';
 import '../viewmodels/conversion_view_model.dart';
 
-class ConversionPage extends StatelessWidget {
-  const ConversionPage({super.key});
+const _accent = AppColors.categoryConversion;
 
-  @override
-  Widget build(BuildContext context) {
-    final t = context.t;
-    return TerminalScaffold(
-      tag: 'convert',
-      title: t.conversionPageTitle,
-      accent: AppColors.accentConversion,
-      body: FeatureGrid(
-        items: [
-          FeatureGridItem(
-            icon: Icons.image_outlined,
-            title: t.pdfToImagesTitle,
-            subtitle: t.pdfToImagesHint,
-            color: AppColors.operationColor(0),
-            page: _OperationPage(
-                tag: 'pdf2img', color: AppColors.operationColor(0), child: const _PdfToImagesSection()),
-          ),
-          FeatureGridItem(
-            icon: Icons.picture_as_pdf_outlined,
-            title: t.imagesToPdfTitle,
-            subtitle: t.imagesToPdfHint,
-            color: AppColors.operationColor(1),
-            page: _OperationPage(
-                tag: 'img2pdf', color: AppColors.operationColor(1), child: const _ImagesToPdfSection()),
-          ),
-          FeatureGridItem(
-            icon: Icons.description_outlined,
-            title: t.pdfToWordTitle,
-            subtitle: t.pdfToWordHint,
-            color: AppColors.operationColor(2),
-            page: _OperationPage(
-                tag: 'pdf2word', color: AppColors.operationColor(2), child: const _PdfToWordSection()),
-          ),
-          FeatureGridItem(
-            icon: Icons.table_chart_outlined,
-            title: t.pdfToExcelTitle,
-            subtitle: t.pdfToExcelHint,
-            color: AppColors.operationColor(3),
-            page: _OperationPage(
-                tag: 'pdf2excel', color: AppColors.operationColor(3), child: const _PdfToExcelSection()),
-          ),
-          FeatureGridItem(
-            icon: Icons.slideshow_outlined,
-            title: t.pdfToPptTitle,
-            subtitle: t.pdfToPptHint,
-            color: AppColors.operationColor(4),
-            page: _OperationPage(
-                tag: 'pdf2ppt', color: AppColors.operationColor(4), child: const _PdfToPptSection()),
-          ),
-          FeatureGridItem(
-            icon: Icons.code,
-            title: t.htmlToPdfTitle,
-            subtitle: t.htmlToPdfCardHint,
-            color: AppColors.operationColor(5),
-            page: _OperationPage(
-                tag: 'html2pdf', color: AppColors.operationColor(5), child: const _HtmlToPdfSection()),
-          ),
-        ],
-      ),
-    );
-  }
+List<ToolItem> conversionTools(BuildContext context) {
+  final t = context.t;
+  return [
+    ToolItem(icon: Icons.image_outlined, title: t.pdfToImagesTitle, page: const _PdfToImagesPage()),
+    ToolItem(icon: Icons.picture_as_pdf_outlined, title: t.imagesToPdfTitle, page: const _ImagesToPdfPage()),
+    ToolItem(icon: Icons.description_outlined, title: t.pdfToWordTitle, page: const _PdfToWordPage()),
+    ToolItem(icon: Icons.table_chart_outlined, title: t.pdfToExcelTitle, page: const _PdfToExcelPage()),
+    ToolItem(icon: Icons.slideshow_outlined, title: t.pdfToPptTitle, page: const _PdfToPptPage()),
+    ToolItem(icon: Icons.code, title: t.htmlToPdfTitle, page: const _HtmlToPdfPage()),
+  ];
 }
 
-/// Wraps a single operation section in its own page, reached from the
-/// operation grid above.
-class _OperationPage extends StatelessWidget {
-  final String tag;
-  final Color color;
-  final Widget child;
-  const _OperationPage({required this.tag, required this.color, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return TerminalScaffold(
-      tag: tag,
-      title: context.t.conversionPageTitle,
-      accent: color,
-      body: ListView(
-        padding: const EdgeInsets.all(12),
-        children: [child],
-      ),
-    );
-  }
-}
-
-class _PdfToImagesSection extends StatelessWidget {
-  const _PdfToImagesSection();
+class _PdfToImagesPage extends StatelessWidget {
+  const _PdfToImagesPage();
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ConversionViewModel>();
     final t = context.t;
-    return TerminalSection(
+    return OperationScaffold(
       title: t.pdfToImagesTitle,
-      initiallyExpanded: true,
+      accent: _accent,
       children: [
         FileTile(
           path: vm.pdfToImagesFile,
@@ -116,34 +42,33 @@ class _PdfToImagesSection extends StatelessWidget {
           },
           onClear: () => vm.pdfToImagesFile = null,
         ),
-        const SizedBox(height: 8),
         ElevatedButton(
           onPressed: vm.pdfToImagesFile != null && !vm.isConvertingToImages
               ? () => vm.convertPdfToImages()
               : null,
           child: Text(t.convertToImagesButton),
         ),
-        ResultCard(
-            result: vm.pdfToImagesResult,
-            isLoading: vm.isConvertingToImages),
+        ResultCard(result: vm.pdfToImagesResult, isLoading: vm.isConvertingToImages),
       ],
     );
   }
 }
 
-class _ImagesToPdfSection extends StatelessWidget {
-  const _ImagesToPdfSection();
+class _ImagesToPdfPage extends StatelessWidget {
+  const _ImagesToPdfPage();
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ConversionViewModel>();
     final t = context.t;
-    return TerminalSection(
+    final accent = _accent;
+    return OperationScaffold(
       title: t.imagesToPdfTitle,
-      initiallyExpanded: true,
+      accent: _accent,
       children: [
-        ElevatedButton(
-          onPressed: () async {
+        InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () async {
             final r = await FilePicker.platform.pickFiles(
               type: FileType.image,
               allowMultiple: true,
@@ -152,41 +77,52 @@ class _ImagesToPdfSection extends StatelessWidget {
               vm.imagesToPdfFiles = r.files.map((f) => f.path!).toList();
             }
           },
-          child: Text(t.selectImagesMultiple),
-        ),
-        if (vm.imagesToPdfFiles.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Text(t.imagesSelected(vm.imagesToPdfFiles.length),
-                style: Theme.of(context).textTheme.bodySmall),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: accent, width: 1.4),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.image_outlined, color: accent, size: 26),
+                const SizedBox(height: 8),
+                Text(t.selectImagesMultiple,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: accent)),
+                if (vm.imagesToPdfFiles.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(t.imagesSelected(vm.imagesToPdfFiles.length),
+                      style: Theme.of(context).textTheme.bodySmall),
+                ],
+              ],
+            ),
           ),
-        const SizedBox(height: 8),
+        ),
         ElevatedButton(
           onPressed: vm.imagesToPdfFiles.isNotEmpty && !vm.isConvertingToPdf
               ? () => vm.convertImagesToPdf()
               : null,
           child: Text(t.createPdfButton),
         ),
-        ResultCard(
-            result: vm.imagesToPdfResult, isLoading: vm.isConvertingToPdf),
+        ResultCard(result: vm.imagesToPdfResult, isLoading: vm.isConvertingToPdf),
       ],
     );
   }
 }
 
-class _PdfToWordSection extends StatelessWidget {
-  const _PdfToWordSection();
+class _PdfToWordPage extends StatelessWidget {
+  const _PdfToWordPage();
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ConversionViewModel>();
     final t = context.t;
-    return TerminalSection(
+    return OperationScaffold(
       title: t.pdfToWordTitle,
-      initiallyExpanded: true,
+      accent: _accent,
       children: [
         Text(t.pdfToWordDesc, style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 8),
         FileTile(
           path: vm.pdfToWordFile,
           onTap: () async {
@@ -196,33 +132,30 @@ class _PdfToWordSection extends StatelessWidget {
           },
           onClear: () => vm.pdfToWordFile = null,
         ),
-        const SizedBox(height: 8),
         ElevatedButton(
           onPressed: vm.pdfToWordFile != null && !vm.isConvertingToWord
               ? () => vm.convertPdfToWord()
               : null,
           child: Text(t.convertToWordButton),
         ),
-        ResultCard(
-            result: vm.pdfToWordResult, isLoading: vm.isConvertingToWord),
+        ResultCard(result: vm.pdfToWordResult, isLoading: vm.isConvertingToWord),
       ],
     );
   }
 }
 
-class _PdfToExcelSection extends StatelessWidget {
-  const _PdfToExcelSection();
+class _PdfToExcelPage extends StatelessWidget {
+  const _PdfToExcelPage();
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ConversionViewModel>();
     final t = context.t;
-    return TerminalSection(
+    return OperationScaffold(
       title: t.pdfToExcelTitle,
-      initiallyExpanded: true,
+      accent: _accent,
       children: [
         Text(t.pdfToExcelDesc, style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 8),
         FileTile(
           path: vm.pdfToExcelFile,
           onTap: () async {
@@ -232,33 +165,30 @@ class _PdfToExcelSection extends StatelessWidget {
           },
           onClear: () => vm.pdfToExcelFile = null,
         ),
-        const SizedBox(height: 8),
         ElevatedButton(
           onPressed: vm.pdfToExcelFile != null && !vm.isConvertingToExcel
               ? () => vm.convertPdfToExcel()
               : null,
           child: Text(t.convertToExcelButton),
         ),
-        ResultCard(
-            result: vm.pdfToExcelResult, isLoading: vm.isConvertingToExcel),
+        ResultCard(result: vm.pdfToExcelResult, isLoading: vm.isConvertingToExcel),
       ],
     );
   }
 }
 
-class _PdfToPptSection extends StatelessWidget {
-  const _PdfToPptSection();
+class _PdfToPptPage extends StatelessWidget {
+  const _PdfToPptPage();
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ConversionViewModel>();
     final t = context.t;
-    return TerminalSection(
+    return OperationScaffold(
       title: t.pdfToPptTitle,
-      initiallyExpanded: true,
+      accent: _accent,
       children: [
         Text(t.pdfToPptDesc, style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 8),
         FileTile(
           path: vm.pdfToPptFile,
           onTap: () async {
@@ -268,27 +198,25 @@ class _PdfToPptSection extends StatelessWidget {
           },
           onClear: () => vm.pdfToPptFile = null,
         ),
-        const SizedBox(height: 8),
         ElevatedButton(
           onPressed: vm.pdfToPptFile != null && !vm.isConvertingToPpt
               ? () => vm.convertPdfToPpt()
               : null,
           child: Text(t.convertToPptButton),
         ),
-        ResultCard(
-            result: vm.pdfToPptResult, isLoading: vm.isConvertingToPpt),
+        ResultCard(result: vm.pdfToPptResult, isLoading: vm.isConvertingToPpt),
       ],
     );
   }
 }
 
-class _HtmlToPdfSection extends StatefulWidget {
-  const _HtmlToPdfSection();
+class _HtmlToPdfPage extends StatefulWidget {
+  const _HtmlToPdfPage();
   @override
-  State<_HtmlToPdfSection> createState() => _HtmlToPdfSectionState();
+  State<_HtmlToPdfPage> createState() => _HtmlToPdfPageState();
 }
 
-class _HtmlToPdfSectionState extends State<_HtmlToPdfSection> {
+class _HtmlToPdfPageState extends State<_HtmlToPdfPage> {
   final _ctrl = TextEditingController(
       text: '<h1>Title</h1><p>Hello World. This is HTML content.</p>');
 
@@ -302,20 +230,17 @@ class _HtmlToPdfSectionState extends State<_HtmlToPdfSection> {
   Widget build(BuildContext context) {
     final vm = context.watch<ConversionViewModel>();
     final t = context.t;
-    return TerminalSection(
+    return OperationScaffold(
       title: t.htmlToPdfTitle,
-      initiallyExpanded: true,
+      accent: _accent,
       children: [
         TextField(
           controller: _ctrl,
-          maxLines: 5,
+          maxLines: 6,
           decoration: InputDecoration(labelText: t.htmlToPdfHint),
         ),
-        const SizedBox(height: 8),
         ElevatedButton(
-          onPressed: !vm.isConvertingHtml
-              ? () => vm.convertHtmlToPdf(_ctrl.text)
-              : null,
+          onPressed: !vm.isConvertingHtml ? () => vm.convertHtmlToPdf(_ctrl.text) : null,
           child: Text(t.convertToPdfButton),
         ),
         ResultCard(result: vm.htmlToPdfResult, isLoading: vm.isConvertingHtml),

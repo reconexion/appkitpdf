@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/result_card.dart';
-import '../../../../core/widgets/terminal_widgets.dart';
 import '../viewmodels/organization_view_model.dart';
 
 class RenamePage extends StatefulWidget {
@@ -27,40 +27,34 @@ class _RenamePageState extends State<RenamePage> {
   Widget build(BuildContext context) {
     final vm = context.watch<OrganizationViewModel>();
     final t = context.t;
-    return TerminalScaffold(
-      tag: 'rename',
+    return OperationScaffold(
       title: t.renameTitle,
-      accent: AppColors.accentRename,
-      body: ListView(
-        padding: const EdgeInsets.all(12),
-        children: [
-          FileTile(
-            path: vm.renameFile,
-            onTap: () async {
-              final r = await FilePicker.platform.pickFiles(
-                  type: FileType.custom, allowedExtensions: ['pdf']);
-              if (r != null) vm.renameFile = r.files.single.path;
-            },
-            onClear: () => vm.renameFile = null,
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _nameCtrl,
-            onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(labelText: t.newNameLabel),
-          ),
-          const SizedBox(height: 8),
-          ElevatedButton(
-            onPressed: vm.renameFile != null &&
-                _nameCtrl.text.trim().isNotEmpty &&
-                !vm.isRenaming
-                ? () => vm.rename(_nameCtrl.text)
-                : null,
-            child: Text(t.renameButton),
-          ),
-          ResultCard(result: vm.renameResult, isLoading: vm.isRenaming),
-        ],
-      ),
+      accent: AppColors.categoryOrganization,
+      children: [
+        FileTile(
+          path: vm.renameFile,
+          onTap: () async {
+            final r = await FilePicker.platform.pickFiles(
+                type: FileType.custom, allowedExtensions: ['pdf']);
+            if (r != null) vm.renameFile = r.files.single.path;
+          },
+          onClear: () => vm.renameFile = null,
+        ),
+        TextField(
+          controller: _nameCtrl,
+          onChanged: (_) => setState(() {}),
+          decoration: InputDecoration(labelText: t.newNameLabel),
+        ),
+        ElevatedButton(
+          onPressed: vm.renameFile != null &&
+                  _nameCtrl.text.trim().isNotEmpty &&
+                  !vm.isRenaming
+              ? () => vm.rename(_nameCtrl.text)
+              : null,
+          child: Text(t.renameButton),
+        ),
+        ResultCard(result: vm.renameResult, isLoading: vm.isRenaming),
+      ],
     );
   }
 }
