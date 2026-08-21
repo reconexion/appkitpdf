@@ -7,9 +7,19 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/file_utils.dart';
 import '../../../../core/widgets/app_scaffold.dart';
 
+const _kRecentColors = [
+  AppColors.categoryOrganization,
+  AppColors.categoryConversion,
+  AppColors.categoryEditing,
+  AppColors.categorySecurity,
+  AppColors.categoryExtras,
+];
+
 /// Archivos que produjo cualquier herramienta, más recientes primero.
 /// [ResultCard] los registra automáticamente en cuanto una operación
-/// termina con éxito — esta pantalla solo los lista.
+/// termina con éxito — esta pantalla solo los lista, cada uno en una
+/// tarjeta de color (rotando la paleta de categorías para dar ritmo
+/// visual, ya que un archivo reciente no pertenece a una sola categoría).
 class RecentPage extends StatelessWidget {
   const RecentPage({super.key});
 
@@ -42,10 +52,11 @@ class RecentPage extends StatelessWidget {
               ),
             )
           : ListView.separated(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
               itemCount: files.length,
               separatorBuilder: (_, _) => const SizedBox(height: 10),
-              itemBuilder: (context, i) => _RecentTile(file: files[i]),
+              itemBuilder: (context, i) =>
+                  _RecentTile(file: files[i], color: _kRecentColors[i % _kRecentColors.length]),
             ),
     );
   }
@@ -53,30 +64,21 @@ class RecentPage extends StatelessWidget {
 
 class _RecentTile extends StatelessWidget {
   final RecentFile file;
-  const _RecentTile({required this.file});
+  final Color color;
+  const _RecentTile({required this.file, required this.color});
 
   @override
   Widget build(BuildContext context) {
     final t = context.t;
     return InkWell(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(16),
       onTap: () => OpenFilex.open(file.path),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: AppTheme.card(),
+        decoration: AppTheme.colorCard(color, radius: 16),
         child: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.textTertiary, width: 1.2),
-              ),
-              child: const Icon(Icons.picture_as_pdf_outlined,
-                  color: AppColors.textSecondary, size: 19),
-            ),
+            const BlackBadge(icon: Icons.picture_as_pdf_outlined, size: 38, iconSize: 17),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -90,20 +92,29 @@ class _RecentTile extends StatelessWidget {
                     style: Theme.of(context)
                         .textTheme
                         .bodyMedium
-                        ?.copyWith(fontWeight: FontWeight.w600),
+                        ?.copyWith(fontWeight: FontWeight.w700, color: AppColors.cardText),
                   ),
                   Text(
                     '${FileUtils.formatFileSize(file.sizeBytes)} • '
                     '${FileUtils.formatRecentDate(file.processedAt, todayLabel: t.todayLabel)}',
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: AppColors.cardText.withValues(alpha: 0.65)),
                   ),
                 ],
               ),
             ),
-            IconButton(
-              tooltip: t.removeFromList,
-              icon: const Icon(Icons.close, size: 18, color: AppColors.textTertiary),
-              onPressed: () => context.read<RecentFilesController>().remove(file.path),
+            InkWell(
+              borderRadius: BorderRadius.circular(999),
+              onTap: () => context.read<RecentFilesController>().remove(file.path),
+              child: Container(
+                width: 26,
+                height: 26,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(color: AppColors.badge, shape: BoxShape.circle),
+                child: const Icon(Icons.close, size: 13, color: Colors.white),
+              ),
             ),
           ],
         ),

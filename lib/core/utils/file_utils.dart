@@ -40,6 +40,26 @@ class FileUtils {
     return candidate;
   }
 
+  /// Moves an already-produced output file to a new, sanitized and
+  /// de-duplicated name (same extension), used by the rename action on
+  /// the result card. Tries a fast in-place rename first, falls back to
+  /// copy+delete if the platform can't rename across directories.
+  static Future<String> renameOutputFile(String oldPath, String newName) async {
+    final oldName = oldPath.split(RegExp(r'[\\/]')).last;
+    final dot = oldName.lastIndexOf('.');
+    final ext = dot > 0 ? oldName.substring(dot + 1) : 'pdf';
+    final newPath = await getRenamedPath(newName, extension: ext);
+    final oldFile = File(oldPath);
+    try {
+      final renamed = await oldFile.rename(newPath);
+      return renamed.path;
+    } catch (_) {
+      await oldFile.copy(newPath);
+      await deleteSafe(oldPath);
+      return newPath;
+    }
+  }
+
   static String xmlEscape(String s) => s
       .replaceAll('&', '&amp;')
       .replaceAll('<', '&lt;')

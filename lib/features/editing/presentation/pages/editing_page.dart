@@ -27,28 +27,47 @@ class _PositionSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.t;
+    final accent = AccentScope.of(context);
     final options = {
       PageNumberPosition.bottomCenter: t.positionBottomCenter,
       PageNumberPosition.bottomRight: t.positionBottomRight,
       PageNumberPosition.topCenter: t.positionTopCenter,
     };
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
+    return Column(
       children: options.entries.map((e) {
         final selected = value == e.key;
-        return ChoiceChip(
-          label: Text(e.value),
-          selected: selected,
-          onSelected: (_) => onChanged(e.key),
-          selectedColor: AppColors.red,
-          backgroundColor: AppColors.surfaceAlt,
-          labelStyle: TextStyle(
-            color: selected ? Colors.white : AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(999),
+            onTap: () => onChanged(e.key),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+              decoration: BoxDecoration(
+                color: selected ? accent : AppColors.badge,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(e.value,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: selected ? AppColors.cardText : Colors.white70,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13.5,
+                        )),
+                  ),
+                  if (selected) ...[
+                    const SizedBox(width: 8),
+                    const Icon(Icons.check, color: AppColors.cardText, size: 18),
+                  ],
+                ],
+              ),
+            ),
           ),
-          side: BorderSide(color: selected ? AppColors.red : AppColors.border),
-          shape: const StadiumBorder(),
         );
       }).toList(),
     );

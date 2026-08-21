@@ -40,23 +40,28 @@ class _DegreesSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AccentScope.of(context);
     return Row(
       children: [90, 180, 270].map((d) {
         final selected = value == d;
         return Padding(
-          padding: const EdgeInsets.only(right: 10),
-          child: ChoiceChip(
-            label: Text('$d°'),
-            selected: selected,
-            onSelected: (_) => onChanged(d),
-            selectedColor: AppColors.red,
-            backgroundColor: AppColors.surfaceAlt,
-            labelStyle: TextStyle(
-              color: selected ? Colors.white : AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
+          padding: const EdgeInsets.only(right: 8),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(999),
+            onTap: () => onChanged(d),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: selected ? accent : AppColors.badge,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text('$d°',
+                  style: TextStyle(
+                    color: selected ? AppColors.cardText : Colors.white70,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.5,
+                  )),
             ),
-            side: BorderSide(color: selected ? AppColors.red : AppColors.border),
-            shape: const StadiumBorder(),
           ),
         );
       }).toList(),
@@ -430,13 +435,13 @@ class _MultiFileArea extends StatelessWidget {
     if (paths.isEmpty) {
       return InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: accent, width: 1.4),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: accent, width: 1.6),
           ),
           child: Column(
             children: [
@@ -444,8 +449,6 @@ class _MultiFileArea extends StatelessWidget {
               const SizedBox(height: 8),
               Text(t.selectPdfsMultiple,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(color: accent)),
-              const SizedBox(height: 2),
-              Text(t.noFileSelected, style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
         ),
@@ -454,32 +457,50 @@ class _MultiFileArea extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: AppTheme.card(),
+      decoration: AppTheme.colorCard(accent, radius: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(t.filesSelected(paths.length), style: Theme.of(context).textTheme.titleMedium),
+          Text(t.filesSelected(paths.length),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(color: AppColors.cardText, fontWeight: FontWeight.w700)),
           const SizedBox(height: 10),
           ...paths.map((p) => Padding(
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
                   children: [
-                    Icon(Icons.picture_as_pdf_outlined, size: 16, color: accent),
-                    const SizedBox(width: 8),
+                    Container(
+                        width: 5,
+                        height: 5,
+                        decoration:
+                            const BoxDecoration(color: AppColors.cardText, shape: BoxShape.circle)),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         p.split(RegExp(r'[\\/]')).last,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(color: AppColors.cardText.withValues(alpha: 0.75)),
                       ),
                     ),
                   ],
                 ),
               )),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton(onPressed: onTap, child: Text(t.changeFile)),
+          const SizedBox(height: 4),
+          InkWell(
+            borderRadius: BorderRadius.circular(999),
+            onTap: onTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(color: AppColors.badge, borderRadius: BorderRadius.circular(999)),
+              child: Text(t.changeFile,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 11.5)),
+            ),
           ),
         ],
       ),

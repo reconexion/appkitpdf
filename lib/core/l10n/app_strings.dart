@@ -28,6 +28,8 @@ abstract class AppStrings {
   // ─── App ───────────────────────────────────────────────────
   String get appTitle;
   String get languageTooltip;
+  String get homeHeadline;
+  String get categoriesLabel;
 
   String get organizationTitle;
   String get conversionTitle;
@@ -53,6 +55,9 @@ abstract class AppStrings {
   String errorMessage(String error);
   String get open;
   String get share;
+  String get renameShort;
+  String get cancel;
+  String get save;
   String get noFileSelected;
   String get select;
   String get selectFileCta;
@@ -163,6 +168,10 @@ class EnStrings implements AppStrings {
   String get appTitle => 'KitPDF';
   @override
   String get languageTooltip => 'Language';
+  @override
+  String get homeHeadline => 'Your PDFs,\nready in seconds.';
+  @override
+  String get categoriesLabel => 'Categories';
 
   @override
   String get organizationTitle => 'Organization';
@@ -207,6 +216,12 @@ class EnStrings implements AppStrings {
   String get open => 'Open';
   @override
   String get share => 'Share';
+  @override
+  String get renameShort => 'Rename';
+  @override
+  String get cancel => 'Cancel';
+  @override
+  String get save => 'Save';
   @override
   String get noFileSelected => 'No file selected yet';
   @override
@@ -401,6 +416,10 @@ class EsStrings implements AppStrings {
   String get appTitle => 'KitPDF';
   @override
   String get languageTooltip => 'Idioma';
+  @override
+  String get homeHeadline => 'Tus PDFs, listos\nen segundos.';
+  @override
+  String get categoriesLabel => 'Categorías';
 
   @override
   String get organizationTitle => 'Organización';
@@ -445,6 +464,12 @@ class EsStrings implements AppStrings {
   String get open => 'Abrir';
   @override
   String get share => 'Compartir';
+  @override
+  String get renameShort => 'Renombrar';
+  @override
+  String get cancel => 'Cancelar';
+  @override
+  String get save => 'Guardar';
   @override
   String get noFileSelected => 'Aún no seleccionas un archivo';
   @override

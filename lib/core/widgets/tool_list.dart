@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../l10n/app_strings.dart';
 import '../theme/app_theme.dart';
 import 'animations.dart';
 import 'app_scaffold.dart';
@@ -14,9 +13,9 @@ class ToolItem {
   const ToolItem({required this.icon, required this.title, required this.page});
 }
 
-/// Tarjeta grande de categoría en Home: ícono + nombre + cuántas
-/// herramientas trae, en el color de esa categoría (contorno y texto,
-/// nunca relleno). Toca para ver la lista de herramientas de la categoría.
+/// Tarjeta de categoría en Home: relleno plano del color de la
+/// categoría, insignia circular negra con el ícono y título en negro —
+/// toca para ver la lista de herramientas de la categoría.
 class CategoryCard extends StatelessWidget {
   final String label;
   final IconData icon;
@@ -33,47 +32,29 @@ class CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.t;
     return InkWell(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(22),
       onTap: () => Navigator.push(
         context,
         slidePageRoute(CategoryToolsPage(label: label, color: color, items: items)),
       ),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
-        decoration: AppTheme.card(radius: 16, borderColor: color, borderWidth: 1.3),
-        child: Row(
+        padding: const EdgeInsets.all(14),
+        decoration: AppTheme.colorCard(color, radius: 22),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 50,
-              height: 50,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: color, width: 1.5),
-              ),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(width: 16),
+            BlackBadge(icon: icon),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(label,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: color, fontSize: 16.5, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 3),
-                  Text(t.toolsCount(items.length),
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: AppColors.textSecondary)),
-                ],
+              child: Align(
+                alignment: Alignment.bottomLeft,
+                child: Text(label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: AppColors.cardText, fontSize: 15.5, height: 1.15)),
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.textTertiary, size: 20),
           ],
         ),
       ),
@@ -81,8 +62,10 @@ class CategoryCard extends StatelessWidget {
   }
 }
 
-/// Pantalla intermedia: lista de herramientas de una categoría, en el
-/// color de esa categoría — se abre al tocar una [CategoryCard] en Home.
+/// Pantalla intermedia: grid de herramientas de una categoría, cada una
+/// en una variante de tono del color de la categoría (misma familia de
+/// color, ritmo visual entre tarjetas) — se abre al tocar una
+/// [CategoryCard] en Home.
 class CategoryToolsPage extends StatelessWidget {
   final String label;
   final Color color;
@@ -97,58 +80,61 @@ class CategoryToolsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shades = [color, AppTheme.shade(color, -14), AppTheme.shade(color, 14)];
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppHeader(title: label, titleColor: color),
-      body: ListView.separated(
+      body: GridView.builder(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 0.88,
+        ),
         itemCount: items.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 9),
-        itemBuilder: (context, i) => ToolRow(item: items[i], color: color),
+        itemBuilder: (context, i) =>
+            ToolCard(item: items[i], cardColor: shades[i % shades.length]),
       ),
     );
   }
 }
 
-/// Una fila de herramienta dentro de [CategoryToolsPage]: ícono + verbo
-/// literal + flecha — mismo lenguaje visual que Recientes.
-class ToolRow extends StatelessWidget {
+/// Tarjeta de herramienta dentro de [CategoryToolsPage]: mismo lenguaje
+/// visual que [CategoryCard] pero centrada y más compacta para caber en
+/// un grid de 2 columnas.
+class ToolCard extends StatelessWidget {
   final ToolItem item;
-  final Color color;
+  final Color cardColor;
 
-  const ToolRow({super.key, required this.item, required this.color});
+  const ToolCard({super.key, required this.item, required this.cardColor});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(18),
       onTap: () => Navigator.push(context, slidePageRoute(item.page)),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
-        decoration: AppTheme.card(radius: 14),
-        child: Row(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        decoration: AppTheme.colorCard(cardColor, radius: 18),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 38,
-              height: 38,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: color, width: 1.2),
-              ),
-              child: Icon(item.icon, color: color, size: 18),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
+            BlackBadge(icon: item.icon, size: 32, iconSize: 15),
+            const SizedBox(height: 10),
+            Flexible(
               child: Text(
                 item.title,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium
-                    ?.copyWith(fontWeight: FontWeight.w600),
+                    ?.copyWith(color: AppColors.cardText, fontWeight: FontWeight.w700, fontSize: 12.5),
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.textTertiary, size: 18),
           ],
         ),
       ),

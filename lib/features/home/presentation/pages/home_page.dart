@@ -25,6 +25,7 @@ class _HomePageState extends State<HomePage> {
     final tabs = const [_HomeTab(), RecentPage(), SettingsPage()];
     return Scaffold(
       backgroundColor: AppColors.bg,
+      extendBody: true,
       body: SafeArea(
         bottom: false,
         child: IndexedStack(index: _tabIndex, children: tabs),
@@ -37,9 +38,8 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-/// Tarjetas grandes por categoría — un tap desde Home lleva a la lista de
-/// herramientas de esa categoría, y otro tap más a la herramienta. Cada
-/// tarjeta lleva su acento (contorno/texto), nunca como fondo.
+/// Tarjetas grandes por categoría, en relleno plano del color de la
+/// categoría — un tap desde Home lleva a la lista de herramientas.
 class _HomeTab extends StatelessWidget {
   const _HomeTab();
 
@@ -48,43 +48,77 @@ class _HomeTab extends StatelessWidget {
     final t = context.t;
     return Scaffold(
       backgroundColor: AppColors.bg,
-      appBar: const _HomeHeader(),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 22, 20, 32),
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 110),
         children: [
-          CategoryCard(
-            label: t.organizationTitle,
-            icon: Icons.merge_type,
-            color: AppColors.categoryOrganization,
-            items: organizationTools(context),
+          const _HomeHeaderBlock(),
+          const SizedBox(height: 24),
+          Text(t.categoriesLabel.toUpperCase(),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textTertiary,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.6)),
+          const SizedBox(height: 10),
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 0.90,
+            children: [
+              CategoryCard(
+                label: t.organizationTitle,
+                icon: Icons.dashboard_outlined,
+                color: AppColors.categoryOrganization,
+                items: organizationTools(context),
+              ),
+              CategoryCard(
+                label: t.conversionTitle,
+                icon: Icons.swap_horiz,
+                color: AppColors.categoryConversion,
+                items: conversionTools(context),
+              ),
+              CategoryCard(
+                label: t.editingTitle,
+                icon: Icons.edit_outlined,
+                color: AppColors.categoryEditing,
+                items: editingTools(context),
+              ),
+              CategoryCard(
+                label: t.securityTitle,
+                icon: Icons.lock_outline,
+                color: AppColors.categorySecurity,
+                items: securityTools(context),
+              ),
+              CategoryCard(
+                label: t.extrasTitle,
+                icon: Icons.auto_fix_high,
+                color: AppColors.categoryExtras,
+                items: extrasTools(context),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          CategoryCard(
-            label: t.conversionTitle,
-            icon: Icons.swap_horiz,
-            color: AppColors.categoryConversion,
-            items: conversionTools(context),
-          ),
-          const SizedBox(height: 12),
-          CategoryCard(
-            label: t.editingTitle,
-            icon: Icons.edit_outlined,
-            color: AppColors.categoryEditing,
-            items: editingTools(context),
-          ),
-          const SizedBox(height: 12),
-          CategoryCard(
-            label: t.securityTitle,
-            icon: Icons.lock_outline,
-            color: AppColors.categorySecurity,
-            items: securityTools(context),
-          ),
-          const SizedBox(height: 12),
-          CategoryCard(
-            label: t.extrasTitle,
-            icon: Icons.auto_fix_high,
-            color: AppColors.categoryExtras,
-            items: extrasTools(context),
+          const SizedBox(height: 22),
+          Container(
+            padding: const EdgeInsets.all(15),
+            decoration: AppTheme.card(),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.shield_outlined, color: AppColors.success, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    t.privacyNote,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: AppColors.textSecondary, height: 1.4),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -92,70 +126,58 @@ class _HomeTab extends StatelessWidget {
   }
 }
 
-/// Header de la pestaña Inicio: logo de marca + nombre de la app, con
-/// una línea de posicionamiento debajo — el único lugar de la app donde
-/// aparece el logotipo completo.
-class _HomeHeader extends StatelessWidget implements PreferredSizeWidget {
-  const _HomeHeader();
-
-  @override
-  Size get preferredSize => const Size.fromHeight(86);
+/// Encabezado de la pestaña Inicio: logo + nombre de la app y un
+/// titular corto — el único lugar de la app donde aparece el logotipo
+/// completo. Es un bloque normal dentro del scroll (no un appBar de
+/// altura fija), así el titular de dos líneas nunca se recorta sin
+/// importar el alto de la barra de estado del dispositivo.
+class _HomeHeaderBlock extends StatelessWidget {
+  const _HomeHeaderBlock();
 
   @override
   Widget build(BuildContext context) {
     final t = context.t;
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
-          child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
           children: [
-            Row(
-              children: [
-                Image.asset('assets/logo.png', height: 32),
-                const SizedBox(width: 10),
-                Text(
-                  t.appTitle,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: AppColors.textPrimary, fontSize: 21, letterSpacing: -0.3),
-                ),
-              ],
+            Container(
+              width: 34,
+              height: 34,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.red,
+                borderRadius: BorderRadius.circular(9),
+                boxShadow: [
+                  BoxShadow(color: AppColors.red.withValues(alpha: 0.4), blurRadius: 14),
+                ],
+              ),
+              child: const Icon(Icons.picture_as_pdf_outlined, color: Colors.white, size: 18),
             ),
-            const SizedBox(height: 5),
-            Padding(
-              padding: const EdgeInsets.only(left: 42),
-              child: RichText(
-                text: TextSpan(
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textTertiary,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3),
-                  children: [
-                    const TextSpan(text: 'hi'),
-                    TextSpan(
-                      text: ':>',
-                      style: const TextStyle(color: AppColors.red, fontWeight: FontWeight.w700),
-                    ),
-                  ],
-                ),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                t.appTitle,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 19),
               ),
             ),
           ],
-          ),
         ),
-      ),
+        const SizedBox(height: 16),
+        Text(
+          t.homeHeadline,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 26, height: 1.15),
+        ),
+      ],
     );
   }
 }
 
+/// Barra inferior flotante tipo vidrio esmerilado, solo íconos — la
+/// pestaña activa lleva un círculo rojo detrás.
 class _BottomNavBar extends StatelessWidget {
   final int index;
   final ValueChanged<int> onChanged;
@@ -163,55 +185,37 @@ class _BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.t;
     final items = [
-      (Icons.home_rounded, Icons.home_outlined, t.navHome),
-      (Icons.schedule, Icons.schedule_outlined, t.navRecent),
-      (Icons.settings_rounded, Icons.settings_outlined, t.settingsTitle),
+      (Icons.home_rounded, Icons.home_outlined),
+      (Icons.schedule, Icons.schedule_outlined),
+      (Icons.settings_rounded, Icons.settings_outlined),
     ];
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
-      ),
+    return Container(
+      color: Colors.transparent,
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          height: 60,
+        child: GlassPill(
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List.generate(items.length, (i) {
               final active = i == index;
-              final (activeIcon, inactiveIcon, label) = items[i];
-              return Expanded(
-                child: InkWell(
-                  onTap: () => onChanged(i),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        active ? activeIcon : inactiveIcon,
-                        color: active ? AppColors.red : AppColors.textTertiary,
-                        size: 21,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        label,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: active ? AppColors.red : AppColors.textTertiary,
-                            fontSize: 10.5,
-                            fontWeight: active ? FontWeight.w600 : FontWeight.w500),
-                      ),
-                      const SizedBox(height: 3),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        width: 3.5,
-                        height: 3.5,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: active ? AppColors.red : Colors.transparent,
-                        ),
-                      ),
-                    ],
+              final (activeIcon, inactiveIcon) = items[i];
+              return InkWell(
+                borderRadius: BorderRadius.circular(999),
+                onTap: () => onChanged(i),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: active ? AppColors.red : Colors.transparent,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    active ? activeIcon : inactiveIcon,
+                    color: active ? Colors.white : AppColors.textTertiary,
+                    size: 19,
                   ),
                 ),
               );

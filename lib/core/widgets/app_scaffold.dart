@@ -22,47 +22,43 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(56);
+  Size get preferredSize => const Size.fromHeight(60);
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
-      ),
-      // Scaffold solo reserva espacio extra para el notch/status bar sobre
-      // un appBar personalizado — no empuja su contenido hacia abajo por
-      // sí solo (eso sí lo hace el AppBar de Material). Sin este SafeArea
-      // el título queda debajo del reloj / batería del sistema.
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: 56,
-          child: Row(
-            children: [
-              if (showBack)
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.arrow_back, size: 22),
-                  color: AppColors.textPrimary,
-                )
-              else
-                const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  title,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineSmall
-                      ?.copyWith(color: titleColor ?? AppColors.textPrimary),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (actions != null) ...actions!,
+    // Scaffold solo reserva espacio extra para el notch/status bar sobre
+    // un appBar personalizado — no empuja su contenido hacia abajo por
+    // sí solo (eso sí lo hace el AppBar de Material). Sin este SafeArea
+    // el título queda debajo del reloj / batería del sistema.
+    return SafeArea(
+      bottom: false,
+      child: SizedBox(
+        height: 60,
+        child: Row(
+          children: [
+            const SizedBox(width: 18),
+            if (showBack)
+              InkWell(
+                borderRadius: BorderRadius.circular(18),
+                onTap: () => Navigator.of(context).pop(),
+                child: const BlackBadge(icon: Icons.arrow_back, size: 36, iconSize: 18),
+              )
+            else
               const SizedBox(width: 4),
-            ],
-          ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineSmall
+                    ?.copyWith(color: titleColor ?? AppColors.textPrimary),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (actions != null) ...actions!,
+            const SizedBox(width: 12),
+          ],
         ),
       ),
     );

@@ -36,7 +36,7 @@ class PdfPageMultiSelect extends StatelessWidget {
     return PdfThumbnails(
       path: path,
       builder: (context, pages) {
-        final color = selectedColor ?? AppColors.red;
+        final color = selectedColor ?? AccentScope.of(context);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -108,14 +108,13 @@ class PdfPageMultiSelect extends StatelessWidget {
                           ),
                         ),
                         if (isSelected)
-                          Positioned(
+                          const Positioned(
                             right: 4,
                             top: 4,
                             child: CircleAvatar(
                               radius: 10,
-                              backgroundColor: color,
-                              child: const Icon(Icons.check,
-                                  size: 13, color: Colors.white),
+                              backgroundColor: AppColors.badge,
+                              child: Icon(Icons.check, size: 13, color: Colors.white),
                             ),
                           ),
                       ],
@@ -220,9 +219,11 @@ class PageSelectAllActions extends StatelessWidget {
     final t = context.t;
     return Row(
       children: [
-        Text(t.pagesCount(totalPages),
-            style: Theme.of(context).textTheme.bodySmall),
-        const Spacer(),
+        Expanded(
+          child: Text(t.pagesCount(totalPages),
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall),
+        ),
         TextButton(onPressed: onSelectAll, child: Text(t.selectAll)),
         TextButton(onPressed: onClear, child: Text(t.clearSelection)),
       ],
